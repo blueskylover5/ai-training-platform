@@ -1,0 +1,525 @@
+{
+  "name": "AI training open-roles market",
+  "description": "The live open-roles market for AI-training work: how many roles are open right now, broken down by kind of work (with median and typical hourly pay where a rate is advertised across at least three platforms) and by platform. Computed from platforms' public live job feeds, refreshed every hour.",
+  "source": "https://aitraining.jobs/roles",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "measurement_technique": "Aggregated from platforms' public live job feeds, refreshed every hour",
+  "updated": "2026-11-09T08:07:11.359442+00:00",
+  "temporal_coverage": "2026-11-09",
+  "totals": {
+    "open_roles": 4376,
+    "platforms_live": 62,
+    "new_last_7d": 388,
+    "new_last_7d_measurement": "Still-open roles first listed in the last 7 days (the 7 UTC days ending today) on a platform already tracked. Each platform's onboarding week (its back-catalog import) is excluded, the same rule recent_market_momentum applies, so wiring a new feed never appears as a hiring spike."
+  },
+  "recent_market_momentum": {
+    "unit": "roles per week",
+    "measurement": "Roles first listed each ISO week (from each posting's first-seen date), counting roles that newly appeared on an already-tracked platform that week, whether still open or since closed. A hiring-velocity flow, distinct from the still-open new_last_7d above. Each platform's onboarding week is excluded (so first wiring a feed's back-catalog never counts as new listings), as is the current partial week.",
+    "avg_new_roles_per_week": 434,
+    "weeks_measured": 4,
+    "weekly": [
+      {
+        "week_start": "2026-08-24",
+        "new_roles": 203
+      },
+      {
+        "week_start": "2026-08-31",
+        "new_roles": 253
+      },
+      {
+        "week_start": "2026-09-07",
+        "new_roles": 250
+      },
+      {
+        "week_start": "2026-09-14",
+        "new_roles": 199
+      },
+      {
+        "week_start": "2026-09-21",
+        "new_roles": 133
+      },
+      {
+        "week_start": "2026-09-28",
+        "new_roles": 292
+      },
+      {
+        "week_start": "2026-10-05",
+        "new_roles": 209
+      },
+      {
+        "week_start": "2026-10-12",
+        "new_roles": 425
+      },
+      {
+        "week_start": "2026-10-19",
+        "new_roles": 330
+      },
+      {
+        "week_start": "2026-10-26",
+        "new_roles": 479
+      },
+      {
+        "week_start": "2026-11-02",
+        "new_roles": 503
+      }
+    ]
+  },
+  "open_by_work_type": [
+    {
+      "slug": "domain-expert",
+      "label": "Law, Medicine & Finance",
+      "open_count": 1611,
+      "currency": "USD",
+      "unit": "per hour",
+      "median": 75,
+      "typical_low": 40,
+      "typical_high": 150,
+      "rate_samples": 1082,
+      "platforms": 40
+    },
+    {
+      "slug": "multilingual",
+      "label": "Multilingual & Localization",
+      "open_count": 825,
+      "currency": "USD",
+      "unit": "per hour",
+      "median": 35,
+      "typical_low": 25,
+      "typical_high": 65,
+      "rate_samples": 489,
+      "platforms": 19
+    },
+    {
+      "slug": "audio-speech",
+      "label": "Transcription, Audio & Speech",
+      "open_count": 611,
+      "currency": "USD",
+      "unit": "per hour",
+      "median": 30,
+      "typical_low": 20,
+      "typical_high": 150,
+      "rate_samples": 407,
+      "platforms": 21
+    },
+    {
+      "slug": "coding",
+      "label": "Coding & Software Evaluation",
+      "open_count": 329,
+      "currency": "USD",
+      "unit": "per hour",
+      "median": 60,
+      "typical_low": 35,
+      "typical_high": 125,
+      "rate_samples": 211,
+      "platforms": 18
+    },
+    {
+      "slug": "stem-math",
+      "label": "Math & STEM",
+      "open_count": 238,
+      "currency": "USD",
+      "unit": "per hour",
+      "median": 40,
+      "typical_low": 35,
+      "typical_high": 135,
+      "rate_samples": 201,
+      "platforms": 18
+    },
+    {
+      "slug": "data-labeling",
+      "label": "Data Annotation & Labeling",
+      "open_count": 233,
+      "currency": "USD",
+      "unit": "per hour",
+      "median": 30,
+      "typical_low": 19,
+      "typical_high": 105,
+      "rate_samples": 116,
+      "platforms": 18
+    },
+    {
+      "slug": "agentic-eval",
+      "label": "Agentic Tasks & RL Environments",
+      "open_count": 148,
+      "currency": "USD",
+      "unit": "per hour",
+      "median": 55,
+      "typical_low": 50,
+      "typical_high": 120,
+      "rate_samples": 76,
+      "platforms": 14
+    },
+    {
+      "slug": "rlhf-eval",
+      "label": "AI Evaluation & Rating (RLHF)",
+      "open_count": 141,
+      "currency": "USD",
+      "unit": "per hour",
+      "median": 35,
+      "typical_low": 20,
+      "typical_high": 110,
+      "rate_samples": 98,
+      "platforms": 23
+    },
+    {
+      "slug": "robotics-data",
+      "label": "Robotics & Physical-AI Data",
+      "open_count": 107,
+      "currency": "USD",
+      "unit": "per hour",
+      "median": 10,
+      "typical_low": 6,
+      "typical_high": 35,
+      "rate_samples": 59,
+      "platforms": 8
+    },
+    {
+      "slug": "red-teaming",
+      "label": "Red-Teaming & AI Safety",
+      "open_count": 81,
+      "currency": "USD",
+      "unit": "per hour",
+      "median": 50,
+      "typical_low": 45,
+      "typical_high": 130,
+      "rate_samples": 59,
+      "platforms": 12
+    },
+    {
+      "slug": "writing",
+      "label": "Writing & Content",
+      "open_count": 32,
+      "currency": "USD",
+      "unit": "per hour",
+      "median": 60,
+      "typical_low": 40,
+      "typical_high": 120,
+      "rate_samples": 18,
+      "platforms": 6
+    },
+    {
+      "slug": "research-studies",
+      "label": "Research Studies & Surveys",
+      "open_count": 20,
+      "currency": "USD",
+      "unit": "per hour",
+      "median": 75,
+      "typical_low": 60,
+      "typical_high": 200,
+      "rate_samples": 11,
+      "platforms": 7
+    }
+  ],
+  "open_by_platform": [
+    {
+      "slug": "invisible-technologies",
+      "name": "Invisible",
+      "open_count": 533
+    },
+    {
+      "slug": "superannotate",
+      "name": "SuperAnnotate (SME)",
+      "open_count": 379
+    },
+    {
+      "slug": "micro1",
+      "name": "micro1",
+      "open_count": 378
+    },
+    {
+      "slug": "alignerr",
+      "name": "Alignerr",
+      "open_count": 316
+    },
+    {
+      "slug": "mercor",
+      "name": "Mercor",
+      "open_count": 269
+    },
+    {
+      "slug": "afterquery",
+      "name": "AfterQuery",
+      "open_count": 238
+    },
+    {
+      "slug": "turing",
+      "name": "Turing",
+      "open_count": 211
+    },
+    {
+      "slug": "handshake-ai",
+      "name": "Handshake AI",
+      "open_count": 186
+    },
+    {
+      "slug": "welo-data",
+      "name": "Welo Data",
+      "open_count": 169
+    },
+    {
+      "slug": "dataannotation",
+      "name": "DataAnnotation",
+      "open_count": 133
+    },
+    {
+      "slug": "anyone-ai",
+      "name": "Anyone AI",
+      "open_count": 133
+    },
+    {
+      "slug": "prolific",
+      "name": "Prolific",
+      "open_count": 124
+    },
+    {
+      "slug": "rws-trainai",
+      "name": "RWS TrainAI Community",
+      "open_count": 118
+    },
+    {
+      "slug": "rise-data-labs",
+      "name": "Rise Data Labs",
+      "open_count": 109
+    },
+    {
+      "slug": "mindrift",
+      "name": "Mindrift",
+      "open_count": 93
+    },
+    {
+      "slug": "sigma-ai",
+      "name": "Sigma AI",
+      "open_count": 88
+    },
+    {
+      "slug": "braintrust",
+      "name": "Braintrust",
+      "open_count": 76
+    },
+    {
+      "slug": "perle",
+      "name": "Perle Labs",
+      "open_count": 68
+    },
+    {
+      "slug": "telus-international-ai-community",
+      "name": "TELUS Digital AI",
+      "open_count": 63
+    },
+    {
+      "slug": "volga-partners",
+      "name": "Volga Partners",
+      "open_count": 61
+    },
+    {
+      "slug": "claru",
+      "name": "Claru",
+      "open_count": 60
+    },
+    {
+      "slug": "weekday",
+      "name": "Weekday",
+      "open_count": 60
+    },
+    {
+      "slug": "lifted",
+      "name": "Lifted (Upwork)",
+      "open_count": 50
+    },
+    {
+      "slug": "babel-audio",
+      "name": "Babel Audio",
+      "open_count": 47
+    },
+    {
+      "slug": "appen",
+      "name": "Appen",
+      "open_count": 41
+    },
+    {
+      "slug": "sovrano-ai",
+      "name": "Sovrano AI",
+      "open_count": 40
+    },
+    {
+      "slug": "transperfect-dataforce",
+      "name": "TransPerfect DataForce",
+      "open_count": 36
+    },
+    {
+      "slug": "remoexperts",
+      "name": "RemoExperts",
+      "open_count": 34
+    },
+    {
+      "slug": "innodata",
+      "name": "Innodata",
+      "open_count": 33
+    },
+    {
+      "slug": "opentrain-ai",
+      "name": "OpenTrain AI",
+      "open_count": 30
+    },
+    {
+      "slug": "terac",
+      "name": "Terac",
+      "open_count": 29
+    },
+    {
+      "slug": "vetto",
+      "name": "Vetto",
+      "open_count": 20
+    },
+    {
+      "slug": "oneforma",
+      "name": "OneForma",
+      "open_count": 17
+    },
+    {
+      "slug": "imerit",
+      "name": "iMerit",
+      "open_count": 15
+    },
+    {
+      "slug": "aligned-labs",
+      "name": "Aligned Labs",
+      "open_count": 15
+    },
+    {
+      "slug": "surge-ai",
+      "name": "Surge AI",
+      "open_count": 13
+    },
+    {
+      "slug": "scale-ai-hfc",
+      "name": "Scale AI Human Frontier Collective",
+      "open_count": 10
+    },
+    {
+      "slug": "datamundi",
+      "name": "DATAmundi",
+      "open_count": 9
+    },
+    {
+      "slug": "shaip",
+      "name": "Shaip (Collaborate by Shaip)",
+      "open_count": 9
+    },
+    {
+      "slug": "xai",
+      "name": "xAI (SpaceXAI)",
+      "open_count": 8
+    },
+    {
+      "slug": "pasiflora-ai",
+      "name": "Pasiflora AI",
+      "open_count": 8
+    },
+    {
+      "slug": "outlier-scale-ai",
+      "name": "Outlier (Scale AI)",
+      "open_count": 7
+    },
+    {
+      "slug": "elsevier",
+      "name": "Elsevier Health",
+      "open_count": 6
+    },
+    {
+      "slug": "cohere",
+      "name": "Cohere",
+      "open_count": 5
+    },
+    {
+      "slug": "pila8",
+      "name": "Pila8",
+      "open_count": 4
+    },
+    {
+      "slug": "realtrainai",
+      "name": "RealTrainAI",
+      "open_count": 4
+    },
+    {
+      "slug": "remotasks",
+      "name": "Remotasks",
+      "open_count": 3
+    },
+    {
+      "slug": "sama",
+      "name": "Sama",
+      "open_count": 3
+    },
+    {
+      "slug": "mistral-ai",
+      "name": "Mistral AI",
+      "open_count": 2
+    },
+    {
+      "slug": "fleet-ai",
+      "name": "Fleet AI",
+      "open_count": 1
+    },
+    {
+      "slug": "snorkel-ai",
+      "name": "Snorkel AI Expert Community",
+      "open_count": 1
+    },
+    {
+      "slug": "anthropic",
+      "name": "Anthropic",
+      "open_count": 1
+    },
+    {
+      "slug": "headway",
+      "name": "Headway",
+      "open_count": 1
+    },
+    {
+      "slug": "pointclickcare",
+      "name": "PointClickCare",
+      "open_count": 1
+    },
+    {
+      "slug": "vals-ai",
+      "name": "Vals AI",
+      "open_count": 1
+    },
+    {
+      "slug": "edison-scientific",
+      "name": "Edison Scientific",
+      "open_count": 1
+    },
+    {
+      "slug": "inworld-ai",
+      "name": "Inworld AI",
+      "open_count": 1
+    },
+    {
+      "slug": "evolutioniq",
+      "name": "EvolutionIQ",
+      "open_count": 1
+    },
+    {
+      "slug": "jazzx-ai",
+      "name": "JazzX AI",
+      "open_count": 1
+    },
+    {
+      "slug": "trellis",
+      "name": "Trellis",
+      "open_count": 1
+    },
+    {
+      "slug": "kastle",
+      "name": "Kastle",
+      "open_count": 1
+    },
+    {
+      "slug": "limbic",
+      "name": "Limbic",
+      "open_count": 1
+    }
+  ]
+}
