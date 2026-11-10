@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { creditLine, dailySeries, isStale, publicPay } from "../../src/trends/present";
+import {
+  creditLine,
+  dailySeries,
+  formatChange,
+  formatCount,
+  formatMoney,
+  formatShortDate,
+  isStale,
+  niceScale,
+  publicPay,
+} from "../../src/trends/present";
 
 describe("creditLine (TRD-04, AT-03)", () => {
   it("credits AITraining.jobs with the licence and the data date", () => {
@@ -59,5 +69,26 @@ describe("isStale (TRD-09)", () => {
 
   it("is stale after 26 hours", () => {
     expect(isStale(fetched, new Date("2026-11-10T08:00:01Z"))).toBe(true);
+  });
+});
+
+describe("formatting for the overview page", () => {
+  it("formats counts, money, short dates and changes", () => {
+    expect(formatCount(4393)).toBe("4,393");
+    expect(formatMoney(75, "USD")).toBe("$75");
+    expect(formatMoney(12.5, "USD")).toBe("$12.50");
+    expect(formatShortDate("2026-11-02")).toBe("2 Nov");
+    expect(formatChange(4393, 4376)).toEqual({ text: "+17", direction: "up" });
+    expect(formatChange(379, 388)).toEqual({ text: "−9", direction: "down" });
+    expect(formatChange(62, 62)).toEqual({ text: "No change", direction: "flat" });
+  });
+
+  it("builds round axis scales that cover the largest value", () => {
+    expect(niceScale(503, 3)).toEqual({ max: 600, ticks: [0, 200, 400, 600] });
+    expect(niceScale(200, 4)).toEqual({ max: 200, ticks: [0, 50, 100, 150, 200] });
+    expect(niceScale(0)).toEqual({ max: 1, ticks: [0, 1] });
+    const { max, ticks } = niceScale(1611, 4);
+    expect(max).toBeGreaterThanOrEqual(1611);
+    expect(ticks.at(-1)).toBe(max);
   });
 });

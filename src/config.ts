@@ -2,6 +2,13 @@
  * Central configuration. Limits, thresholds and schedules live here, never inline in code (AGENTS.md).
  */
 
+export const siteConfig = {
+  /** Working names until the product name is decided (spec §13). */
+  name: "AI Training Opportunity & Expert Support Platform",
+  shortName: "AI Training Platform",
+  description: "Daily trends for AI training work: open roles, kinds of work, advertised pay and platforms. Free.",
+} as const;
+
 export const trendsConfig = {
   sources: {
     roles: "https://aitraining.jobs/roles.json",
@@ -18,6 +25,10 @@ export const trendsConfig = {
   minPaySamples: 10,
   /** TRD-09: show an out-of-date notice when the newest snapshot is older than this. */
   staleAfterHours: 26,
+  /** Overview page: how many recent weeks the new-roles chart shows. */
+  overviewWeeks: 12,
+  /** Overview page: how many platforms the chart shows; the data table lists them all. */
+  overviewTopPlatforms: 15,
   /** TRD-04: credit shown with every chart, page, share image and export. */
   credit: {
     name: "AITraining.jobs open data",
