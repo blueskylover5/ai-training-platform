@@ -19,6 +19,11 @@
   --link: #1c5cab;
   --warning: #fab219;
   --warning-wash: #fdf3dc;
+  /* Rank badges on the platform race; decoration, not a data colour. */
+  --gold: #f4c542;
+  --silver: #d3d6db;
+  --bronze: #e0a872;
+  --medal-ink: #0b0b0b;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -37,6 +42,10 @@
     --link: #86b6ef;
     --warning: #fab219;
     --warning-wash: #2b2412;
+    --gold: #d9ad2b;
+    --silver: #b4b9c1;
+    --bronze: #c98c55;
+    --medal-ink: #0b0b0b;
   }
 }
 
@@ -54,6 +63,12 @@
   --color-link: var(--link);
   --color-warning: var(--warning);
   --color-warning-wash: var(--warning-wash);
+  --color-gold: var(--gold);
+  --color-silver: var(--silver);
+  --color-bronze: var(--bronze);
+  --color-medal-ink: var(--medal-ink);
+  --animate-race-grow: race-grow 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-race-fade: race-fade 0.4s ease-out both;
   --font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-geist-mono);
 }
@@ -73,5 +88,18 @@
 
   a:hover {
     text-decoration: underline;
+  }
+}
+
+/* Platform race: bars grow from the start line and their numbers fade in when the race (re)starts. */
+@keyframes race-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes race-fade {
+  from {
+    opacity: 0;
   }
 }

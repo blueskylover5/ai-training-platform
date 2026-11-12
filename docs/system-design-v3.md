@@ -1,6 +1,6 @@
 # AI Training Opportunity & Expert Support Platform
 
-**System design · Version 3.0 · 9 November 2026**
+**System design · Version 3.1 · 12 November 2026**
 
 | | |
 |---|---|
@@ -20,6 +20,10 @@ The service has two jobs:
 2. **Help them succeed.** When experts run into problems, the site connects them with members of our own team who have already worked through the same problems. The conversation then continues directly between the two people, by chat or meeting.
 
 Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, for the optional jobs module, from their partner feed under terms confirmed on 9 November 2026.
+
+### What changed in v3.1 (12 November 2026)
+
+Added the **platform race** page (`TRD-11`): each day, per-platform counts of new roles and big-pay roles from the AITraining.jobs job search, alongside open roles from `roles.json`. See [ADR 0004](adr/0004-platform-counts-from-job-search.md).
 
 ### What changed from v2.1
 
@@ -128,6 +132,7 @@ AITraining.jobs open data, licensed **CC BY 4.0**: reuse is allowed when AITrain
 |---|---|
 | `https://aitraining.jobs/roles.json` | Totals (open roles, live platforms, new roles in the last 7 days); open roles and pay by kind of work; open roles by platform; new roles per week |
 | `https://aitraining.jobs/pay.json` (also `pay.csv`) | Advertised hourly pay by kind of work |
+| `https://aitraining.jobs/api/v1/jobs` (job search) | Open roles matching filters. Once a day we read only the `total` of three searches per platform (`TRD-11`); the roles in the answers are never stored |
 | Field reference | `https://aitraining.jobs/data` |
 
 Example from 9 November 2026, to show the shape of the data:
@@ -155,6 +160,7 @@ These files hold only the current day's figures. **Saving a copy every day build
 | `TRD-08` | Hide a pay figure when it rests on fewer than 10 rate samples. |
 | `TRD-09` | Trend pages show a notice when the latest snapshot is more than 26 hours old. |
 | `TRD-10` | Each chart has a stable URL, a data table for screen readers, and a server-generated share image. |
+| `TRD-11` | Once a day, after `roles.json`, count three figures for every platform listed in it, using the job search: open roles, roles first listed in the last 7 days, and roles whose advertised hourly pay reaches $100 at the top of its range. Keep only the counts, the settings used and a raw record of them. Store nothing when a search fails. Hold (do not publish) when the platform counts add up to more than 50% away from `roles.json`, or when a filter looks ignored (new or big-pay roles equal all open roles). Skip when the newest `roles.json` is more than 1 day old, because the search is live. |
 
 ### Pages
 
@@ -163,7 +169,7 @@ These files hold only the current day's figures. **Saving a copy every day build
 | **Overview** | Open roles, live platforms, new roles in the last 7 days; new roles per week; top kinds of work by open roles |
 | **Kind of work** (one page each, for example "Law, Medicine & Finance") | Open roles over time, median and typical pay, number of platforms, a short team-written explanation of the work, links to matching team experts and jobs |
 | **Pay** | Median and typical range for every kind of work, side by side |
-| **Platforms** | Top platforms by open roles, and change over time |
+| **Platforms** (the platform race) | An animated leaderboard with three races: most open roles, most new roles in the last 7 days, and most roles advertising $100+ an hour. Shows the top 10 (ties at 10th included), how many places each platform gains or loses when you switch races, and a few lines of commentary written from the figures. Each race has its own link (`#race-new`). Change over time comes once history builds up |
 
 The **kind-of-work pages** are the main way experts arrive: a nurse searching "AI training jobs for nurses" should land on the right page, see real figures, and find a team expert from the same field.
 

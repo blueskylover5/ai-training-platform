@@ -1,4 +1,5 @@
 import { io } from "next/cache";
+import Link from "next/link";
 import { Suspense } from "react";
 import { trendsConfig } from "@/config";
 import { getDb } from "@/db/server";
@@ -14,6 +15,7 @@ import {
 import { getTrendsOverview, type TotalsFigures, type TrendsOverview } from "@/trends/queries";
 import { ChartCard, DataTable } from "./_components/chart-card";
 import { BarList, PayRanges, WeeklyColumns } from "./_components/charts";
+import { NoDataYet, StaleNotice } from "./_components/notices";
 
 export default function Home() {
   return (
@@ -216,30 +218,12 @@ function PlatformsChart({ data }: { data: TrendsOverview }) {
         total={totals.openRoles}
         items={top.map((p) => ({ key: p.slug, label: p.name, value: p.openCount }))}
       />
-    </ChartCard>
-  );
-}
-
-/** TRD-09 */
-function StaleNotice({ dataDate }: { dataDate: string }) {
-  return (
-    <div role="status" className="flex gap-3 rounded-xl border border-warning/60 bg-warning-wash px-5 py-4 text-sm text-ink">
-      <span aria-hidden="true" className="text-base leading-5 text-warning">
-        ⚠
-      </span>
-      <p>
-        <span className="font-medium">Out of date.</span> These figures are from {formatDataDate(dataDate)}. The
-        latest daily update has not arrived yet.
+      <p className="mt-5 text-sm">
+        <Link href="/platforms" className="font-medium">
+          Watch the platform race: who leads on new roles and big pay? →
+        </Link>
       </p>
-    </div>
-  );
-}
-
-function NoDataYet() {
-  return (
-    <div role="status" className="rounded-xl border border-line bg-surface px-5 py-8 text-ink-2">
-      The first daily update has not run yet. Figures will appear here after it does.
-    </div>
+    </ChartCard>
   );
 }
 

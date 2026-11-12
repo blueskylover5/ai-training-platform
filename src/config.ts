@@ -29,6 +29,28 @@ export const trendsConfig = {
   overviewWeeks: 12,
   /** Overview page: how many platforms the chart shows; the data table lists them all. */
   overviewTopPlatforms: 15,
+  /**
+   * TRD-11: per-platform counts read from the AITraining.jobs job search once a day, right after
+   * roles.json. Only the `total` of each search is kept; individual roles are never stored.
+   */
+  platformStats: {
+    searchUrl: "https://aitraining.jobs/api/v1/jobs",
+    /** "New" means first listed in this many UTC days, ending on the data date (as roles.json counts it). */
+    newWindowDays: 7,
+    /** "Big pay" means the top of the advertised hourly range reaches this many US dollars. */
+    bigPayMinHourlyUsd: 100,
+    /** Pause between searches, to stay gentle on the source (3 searches per platform). */
+    requestDelayMs: 500,
+    /** Live search counts only match a roles file this many days old or newer (UTC). */
+    maxLagDays: 1,
+  },
+  /** Platform race page. */
+  race: {
+    /** How many platforms run in each race; the data table lists them all. */
+    size: 10,
+    /** A platform needs this many open roles before its big-pay share is quoted. */
+    minOpenRolesForShare: 20,
+  },
   /** TRD-04: credit shown with every chart, page, share image and export. */
   credit: {
     name: "AITraining.jobs open data",

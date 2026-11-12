@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { siteConfig, trendsConfig } from "@/config";
+import { MainNav } from "./_components/main-nav";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,14 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Link href="/" className="font-semibold tracking-tight text-ink hover:no-underline">
               {siteConfig.shortName}
             </Link>
-            <nav aria-label="Main" className="flex gap-5 text-sm">
-              <Link href="/" aria-current="page" className="text-ink">
-                Trends
-              </Link>
-              <span className="text-ink-3" title="Coming soon">
-                Experts
-              </span>
-            </nav>
+            <MainNav />
           </div>
         </header>
         {children}

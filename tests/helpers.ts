@@ -12,7 +12,7 @@ export async function createTestDb(): Promise<DbHandle> {
 /** Empties every trends table so each test starts clean. */
 export async function resetTrendTables(handle: DbHandle): Promise<void> {
   await handle.db.execute(
-    sql`TRUNCATE trend_weekly, trend_pay, trend_platforms, trend_work_types, trend_totals, trend_snapshots RESTART IDENTITY CASCADE`,
+    sql`TRUNCATE trend_platform_stats, trend_weekly, trend_pay, trend_platforms, trend_work_types, trend_totals, trend_snapshots RESTART IDENTITY CASCADE`,
   );
 }
 
@@ -22,3 +22,5 @@ export function readFixture(name: string): string {
 
 export const ROLES_FIXTURE = "roles-2026-11-09.json";
 export const PAY_FIXTURE = "pay-2026-11-09.json";
+/** One recorded job-search answer (platform=mercor, since=2026-11-06, limit=1). */
+export const SEARCH_FIXTURE = "search-count-2026-11-12.json";

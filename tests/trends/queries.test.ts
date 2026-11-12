@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { DbHandle } from "../../src/db/client";
 import { collectTrends, type CollectDeps } from "../../src/trends/collect";
-import { getTrendsOverview } from "../../src/trends/queries";
+import { collectPlatformStats } from "../../src/trends/platform-stats";
+import { getPlatformRace, getTrendsOverview } from "../../src/trends/queries";
 import { MemoryRawStore } from "../../src/trends/raw-store";
 import { createTestDb, PAY_FIXTURE, readFixture, resetTrendTables, ROLES_FIXTURE } from "../helpers";
 
@@ -99,5 +100,67 @@ describe("getTrendsOverview", () => {
     await collect(readFixture(ROLES_FIXTURE), readFixture(PAY_FIXTURE));
     const overview = await getTrendsOverview(handle.db, { weeks: 4 });
     expect(overview?.weekly.map((w) => w.weekStart)).toEqual(["2026-10-12", "2026-10-19", "2026-10-26", "2026-11-02"]);
+  });
+});
+
+describe("getPlatformRace (TRD-11)", () => {
+  /** Job-search counts for the roles fixture: a tenth of each platform's roles are new, a quarter pay $100+. */
+  async function collectStats(hold = false) {
+    const open = new Map<string, number>(
+      JSON.parse(readFixture(ROLES_FIXTURE)).open_by_platform.map((p: { slug: string; open_count: number }) => [p.slug, p.open_count]),
+    );
+    return collectPlatformStats({
+      db: handle.db,
+      rawStore: new MemoryRawStore(),
+      alert: () => {},
+      now: () => new Date("2026-11-09T06:00:00Z"),
+      sleep: async () => {},
+      settings: { searchUrl: "https://test.invalid/api/v1/jobs" },
+      fetchText: async (url) => {
+        const params = new URL(url).searchParams;
+        const n = open.get(params.get("platform") ?? "") ?? 0;
+        const total = params.has("since") ? (hold ? n : Math.floor(n / 10)) : params.has("min_hourly_usd") ? Math.floor(n / 4) : n;
+        return JSON.stringify({ total, roles: [] });
+      },
+    });
+  }
+
+  it("returns null before anything is published", async () => {
+    expect(await getPlatformRace(handle.db)).toBeNull();
+  });
+
+  it("has open roles only until the first job-search counts arrive", async () => {
+    await collect(readFixture(ROLES_FIXTURE), readFixture(PAY_FIXTURE));
+
+    const race = await getPlatformRace(handle.db);
+
+    expect(race?.roles.dataDate).toBe("2026-11-09");
+    expect(race?.stats).toBeNull();
+    expect(race?.platforms).toHaveLength(62);
+    expect(race?.platforms[0]).toEqual({ slug: "invisible-technologies", name: "Invisible", openRoles: 533, stats: null });
+  });
+
+  it("joins the published job-search counts to each platform", async () => {
+    await collect(readFixture(ROLES_FIXTURE), readFixture(PAY_FIXTURE));
+    await collectStats();
+
+    const race = await getPlatformRace(handle.db);
+
+    expect(race?.stats).toMatchObject({ dataDate: "2026-11-09", newSince: "2026-11-03", bigPayMinHourlyUsd: 100 });
+    expect(race?.platforms[0]).toEqual({
+      slug: "invisible-technologies",
+      name: "Invisible",
+      openRoles: 533,
+      stats: { openRoles: 533, newRoles: 53, bigPayRoles: 133 },
+    });
+  });
+
+  it("ignores held counts", async () => {
+    await collect(readFixture(ROLES_FIXTURE), readFixture(PAY_FIXTURE));
+    expect(await collectStats(true)).toMatchObject({ status: "held" });
+
+    const race = await getPlatformRace(handle.db);
+
+    expect(race?.stats).toBeNull();
   });
 });

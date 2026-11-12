@@ -23,12 +23,14 @@ import {
 } from "./schema";
 
 export type FileKind = "roles" | "pay";
+/** Downloaded files plus the per-platform counts we put together from the job search (TRD-11). */
+export type SnapshotKind = FileKind | "platform_stats";
 
 export type CollectOutcome =
-  | { kind: FileKind; status: "published"; dataDate: string; snapshotId: number }
-  | { kind: FileKind; status: "held"; dataDate: string; snapshotId: number; reason: string }
-  | { kind: FileKind; status: "skipped"; dataDate: string; reason: string }
-  | { kind: FileKind; status: "rejected"; reason: string };
+  | { kind: SnapshotKind; status: "published"; dataDate: string; snapshotId: number }
+  | { kind: SnapshotKind; status: "held"; dataDate: string; snapshotId: number; reason: string }
+  | { kind: SnapshotKind; status: "skipped"; dataDate: string; reason: string }
+  | { kind: SnapshotKind; status: "rejected"; reason: string };
 
 export interface CollectDeps {
   db: Db;
