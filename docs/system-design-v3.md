@@ -23,7 +23,7 @@ Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, f
 
 ### What changed in v3.2 (13 November 2026)
 
-- The **Platforms** page is now a four-part guide: platform status (the platform race), projects by sector, pay, and contact.
+- The **Platforms** page is now a four-part guide: platform status (the platform race), projects by sector, pay, and contact. The menu reads "Job market", "Platform guide" and "Contact us".
 - Added a **general contact section** that anyone can use without signing in: an email form, plus Telegram and Discord links (`CON-01` to `CON-06`, §6). See [ADR 0005](adr/0005-public-contact-form.md).
 - The site is light only (black text on a white page) with a larger, roomier layout.
 
@@ -172,10 +172,10 @@ These files hold only the current day's figures. **Saving a copy every day build
 
 | Page | Shows |
 |---|---|
-| **Overview** | Open roles, live platforms, new roles in the last 7 days; new roles per week; top kinds of work by open roles |
+| **Overview** (menu: "Job market") | Open roles, live platforms, new roles in the last 7 days; new roles per week; top kinds of work by open roles |
 | **Kind of work** (one page each, for example "Law, Medicine & Finance") | Open roles over time, median and typical pay, number of platforms, a short team-written explanation of the work, links to matching team experts and jobs |
 | **Pay** | Median and typical range for every kind of work, side by side |
-| **Platforms** (a four-part guide) | Today's headline figures, then: **1. Platform status:** an animated leaderboard with three races (most open roles, most new roles in the last 7 days, most roles advertising $100+ an hour), the top 10 with ties at 10th, places gained or lost when you switch races, commentary written from the figures, and a link per race (`#race-new`). **2. Projects by sector:** open roles and share for each kind of work. **3. Pay:** advertised hourly pay by sector, and each platform's share of roles advertising $100+ an hour (platforms with at least 20 open roles). **4. Contact** (`CON-01` to `CON-06`). Change over time comes once history builds up |
+| **Platforms** (a four-part guide; menu: "Platform guide") | Today's headline figures, then: **1. Platform status:** an animated leaderboard with three races (most open roles, most new roles in the last 7 days, most roles advertising $100+ an hour), the top 10 with ties at 10th, places gained or lost when you switch races, commentary written from the figures, and a link per race (`#race-new`). **2. Projects by sector:** open roles and share for each kind of work. **3. Pay:** advertised hourly pay by sector, and each platform's share of roles advertising $100+ an hour (platforms with at least 20 open roles). **4. Contact** (`CON-01` to `CON-06`). Change over time comes once history builds up |
 
 The **kind-of-work pages** are the main way experts arrive: a nurse searching "AI training jobs for nurses" should land on the right page, see real figures, and find a team expert from the same field.
 
