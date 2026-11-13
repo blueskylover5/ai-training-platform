@@ -16,15 +16,16 @@ import { getTrendsOverview, type TotalsFigures, type TrendsOverview } from "@/tr
 import { ChartCard, DataTable } from "./_components/chart-card";
 import { BarList, PayRanges, WeeklyColumns } from "./_components/charts";
 import { NoDataYet, StaleNotice } from "./_components/notices";
+import { pageWidth } from "./_components/page-width";
 
 export default function Home() {
   return (
-    <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-16 sm:px-6">
-      <section className="pt-10 pb-8 sm:pt-14">
-        <h1 className="max-w-3xl text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+    <main className={`${pageWidth} flex-1 pb-20 sm:pb-28`}>
+      <section className="pt-14 pb-10 sm:pt-20 sm:pb-14">
+        <h1 className="max-w-4xl text-4xl leading-[1.1] font-bold tracking-tight text-balance text-ink sm:text-5xl lg:text-6xl">
           The AI training job market, updated daily
         </h1>
-        <p className="mt-3 max-w-2xl text-base leading-7 text-ink-2">
+        <p className="mt-6 max-w-3xl text-lg leading-8 text-ink-2 sm:text-xl sm:leading-9">
           How many AI training roles are open, what kind of work they need, what they advertise per hour, and which
           platforms are hiring. Free, no sign-up.
         </p>
@@ -32,7 +33,7 @@ export default function Home() {
       <Suspense fallback={<OverviewLoading />}>
         <Overview />
       </Suspense>
-      <ExpertsComingSoon />
+      <ContactTeaser />
     </main>
   );
 }
@@ -45,7 +46,7 @@ async function Overview() {
 
   const stale = isStale(data.roles.fetchedAt, new Date());
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8 sm:gap-10">
       {stale && <StaleNotice dataDate={data.roles.dataDate} />}
       <Headline totals={data.roles.totals} previous={data.roles.previous} />
       <NewRolesChart data={data} />
@@ -64,18 +65,18 @@ function Headline({ totals, previous }: { totals: TotalsFigures; previous: Total
   ];
   return (
     <section aria-labelledby="headline-title">
-      <h2 id="headline-title" className="text-sm text-ink-2">
-        Figures for <span className="font-medium text-ink">{formatDataDate(totals.dataDate)}</span>
+      <h2 id="headline-title" className="text-lg font-semibold text-ink-2">
+        Figures for <span className="text-ink">{formatDataDate(totals.dataDate)}</span>
       </h2>
-      <dl className="mt-3 grid gap-3 sm:grid-cols-3">
+      <dl className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
         {tiles.map((t) => {
           const change = t.before === undefined ? null : formatChange(t.value, t.before);
           return (
-            <div key={t.label} className="rounded-xl border border-line bg-surface px-5 py-4">
-              <dt className="text-sm text-ink-2">{t.label}</dt>
-              <dd className="mt-1 text-3xl font-semibold tracking-tight text-ink">{formatCount(t.value)}</dd>
+            <div key={t.label} className="rounded-2xl border border-line bg-surface p-6 sm:p-7">
+              <dt className="text-base text-ink-2">{t.label}</dt>
+              <dd className="mt-2 text-4xl font-bold tracking-tight text-ink tabular-nums sm:text-5xl">{formatCount(t.value)}</dd>
               {change && previous && (
-                <dd className="mt-1 text-xs text-ink-2">
+                <dd className="mt-2 text-sm text-ink-2">
                   <span aria-hidden="true">{change.direction === "up" ? "▲ " : change.direction === "down" ? "▼ " : ""}</span>
                   {change.text} since {formatShortDate(previous.dataDate)}
                 </dd>
@@ -218,8 +219,8 @@ function PlatformsChart({ data }: { data: TrendsOverview }) {
         total={totals.openRoles}
         items={top.map((p) => ({ key: p.slug, label: p.name, value: p.openCount }))}
       />
-      <p className="mt-5 text-sm">
-        <Link href="/platforms" className="font-medium">
+      <p className="mt-8 text-base">
+        <Link href="/platforms" className="font-semibold">
           Watch the platform race: who leads on new roles and big pay? →
         </Link>
       </p>
@@ -229,30 +230,39 @@ function PlatformsChart({ data }: { data: TrendsOverview }) {
 
 function OverviewLoading() {
   return (
-    <div aria-busy="true" className="flex flex-col gap-6">
+    <div aria-busy="true" className="flex flex-col gap-8">
       <span className="sr-only">Loading the latest figures…</span>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-28 animate-pulse rounded-xl border border-line bg-surface" />
+          <div key={i} className="h-36 animate-pulse rounded-2xl bg-tint" />
         ))}
       </div>
-      <div className="h-80 animate-pulse rounded-xl border border-line bg-surface" />
+      <div className="h-96 animate-pulse rounded-2xl bg-tint" />
     </div>
   );
 }
 
-function ExpertsComingSoon() {
+function ContactTeaser() {
   return (
-    <section aria-labelledby="experts-title" className="mt-10 rounded-xl border border-line bg-surface p-5 sm:p-6">
-      <p className="text-xs font-medium tracking-wide text-ink-2 uppercase">Coming soon</p>
-      <h2 id="experts-title" className="mt-1 text-lg font-semibold tracking-tight text-ink">
-        Stuck on an AI training task?
-      </h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-ink-2">
-        You&apos;ll be able to contact people on our team who have done this work and solved the same problems, then
-        talk by chat or a call. Free. Everyone follows their own platform&apos;s rules: never share task content,
-        assessment answers or logins.
-      </p>
+    <section
+      aria-labelledby="help-title"
+      className="mt-12 flex flex-col items-start gap-6 rounded-3xl bg-tint p-6 sm:mt-16 sm:p-10 lg:flex-row lg:items-center lg:justify-between"
+    >
+      <div className="max-w-2xl">
+        <h2 id="help-title" className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+          Struggling with AI training?
+        </h2>
+        <p className="mt-3 text-lg leading-8 text-ink-2">
+          Tell us where you&apos;re stuck and we&apos;ll work through it with you. We never ask for your platform login,
+          and we never do assessments or tasks for you.
+        </p>
+      </div>
+      <Link
+        href="/platforms#contact"
+        className="inline-flex shrink-0 items-center rounded-full bg-ink px-7 py-3.5 text-lg font-semibold text-page hover:no-underline hover:opacity-90"
+      >
+        Contact us →
+      </Link>
     </section>
   );
 }

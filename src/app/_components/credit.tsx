@@ -5,7 +5,7 @@ import { formatDataDate } from "@/trends/present";
 export function Credit({ dataDate, className = "" }: { dataDate: string; className?: string }) {
   const { name, url, license, licenseUrl } = trendsConfig.credit;
   return (
-    <p className={`text-xs leading-5 text-ink-2 ${className}`}>
+    <p className={`text-sm leading-6 text-ink-2 ${className}`}>
       Data: <a href={url}>{name}</a> (<a href={licenseUrl}>{license}</a>), {formatDataDate(dataDate)}
     </p>
   );

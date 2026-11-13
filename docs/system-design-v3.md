@@ -1,6 +1,6 @@
 # AI Training Opportunity & Expert Support Platform
 
-**System design · Version 3.1 · 12 November 2026**
+**System design · Version 3.2 · 13 November 2026**
 
 | | |
 |---|---|
@@ -20,6 +20,12 @@ The service has two jobs:
 2. **Help them succeed.** When experts run into problems, the site connects them with members of our own team who have already worked through the same problems. The conversation then continues directly between the two people, by chat or meeting.
 
 Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, for the optional jobs module, from their partner feed under terms confirmed on 9 November 2026.
+
+### What changed in v3.2 (13 November 2026)
+
+- The **Platforms** page is now a four-part guide: platform status (the platform race), projects by sector, pay, and contact.
+- Added a **general contact section** that anyone can use without signing in: an email form, plus Telegram and Discord links (`CON-01` to `CON-06`, §6). See [ADR 0005](adr/0005-public-contact-form.md).
+- The site is light only (black text on a white page) with a larger, roomier layout.
 
 ### What changed in v3.1 (12 November 2026)
 
@@ -169,7 +175,7 @@ These files hold only the current day's figures. **Saving a copy every day build
 | **Overview** | Open roles, live platforms, new roles in the last 7 days; new roles per week; top kinds of work by open roles |
 | **Kind of work** (one page each, for example "Law, Medicine & Finance") | Open roles over time, median and typical pay, number of platforms, a short team-written explanation of the work, links to matching team experts and jobs |
 | **Pay** | Median and typical range for every kind of work, side by side |
-| **Platforms** (the platform race) | An animated leaderboard with three races: most open roles, most new roles in the last 7 days, and most roles advertising $100+ an hour. Shows the top 10 (ties at 10th included), how many places each platform gains or loses when you switch races, and a few lines of commentary written from the figures. Each race has its own link (`#race-new`). Change over time comes once history builds up |
+| **Platforms** (a four-part guide) | Today's headline figures, then: **1. Platform status:** an animated leaderboard with three races (most open roles, most new roles in the last 7 days, most roles advertising $100+ an hour), the top 10 with ties at 10th, places gained or lost when you switch races, commentary written from the figures, and a link per race (`#race-new`). **2. Projects by sector:** open roles and share for each kind of work. **3. Pay:** advertised hourly pay by sector, and each platform's share of roles advertising $100+ an hour (platforms with at least 20 open roles). **4. Contact** (`CON-01` to `CON-06`). Change over time comes once history builds up |
 
 The **kind-of-work pages** are the main way experts arrive: a nurse searching "AI training jobs for nurses" should land on the right page, see real figures, and find a team expert from the same field.
 
@@ -256,6 +262,19 @@ stateDiagram-v2
 
 The team agreement (Appendix B) is our main protection: the experts are our team, so platforms will treat their actions as ours. The community rules (Appendix A) are shown on the request form and linked from every profile.
 
+### General contact (before sign-in)
+
+Until expert matching launches, the Platforms page has a contact section for anyone who is struggling with AI training. It reaches our team in general, not a chosen expert, so it needs no sign-in. See [ADR 0005](adr/0005-public-contact-form.md).
+
+| ID | Requirement |
+|---|---|
+| `CON-01` | The Platforms page has a contact section that anyone can use without signing in: an email form, plus Telegram and Discord links. It offers general help (choosing platforms, getting accepted, finding work, pay, using your field). It does not replace expert contact requests, which still need sign-in (`EXP-01`). |
+| `CON-02` | The form asks for an email address, a topic from a fixed list, a message (20 to 1,000 characters) and, optionally, a name. The sender MUST tick the same confirmation as `EXP-02`. The server checks every field again. |
+| `CON-03` | Messages are stored on the server only and never shown on any public page. Until an email provider is chosen (§13), the team reads them with `npm run contact:list`. |
+| `CON-04` | At most 3 messages per network address per hour, and a hidden field turns bots away (`SEC-04`). The address is stored only as a salted hash. |
+| `CON-05` | The Telegram and Discord buttons appear only once their links are set in configuration. They are team or community channels, never anyone's personal account (`SEC-03`). |
+| `CON-06` | The section says plainly that we never ask for platform logins or passwords and never do assessments or tasks for anyone, and asks people not to send task content (`EXP-12`, Appendix A). |
+
 ---
 
 ## 7. Jobs module (optional, free)
@@ -296,6 +315,7 @@ This module carries over from v2.1 unchanged in substance. It is phase 3 and can
 | `trend_work_types` | data_date, slug, label, open_count, median, typical_low, typical_high, rate_samples, platforms |
 | `trend_platforms` | data_date, slug, name, open_count |
 | `trend_weekly` | iso_week, new_roles, as_of_date |
+| `contact_messages` | id, created_at, name, email, topic, message, policy_confirmed_at, address_hash, status (new, answered) |
 | `sources`, `source_syncs`, `jobs`, `job_versions`, `saved_jobs`, `applications`, `notifications` | Jobs module only; as in v2.1 §13 |
 | `audit_events` | actor_id, action, resource, at (append-only) |
 
@@ -380,7 +400,8 @@ Sizes are rough, for one or two developers.
 | Tell AITraining.jobs about the trend pages | Pending | Product owner | The licence already allows it; telling them keeps the partnership healthy |
 | Product name and domain | Pending | Business owner | Needed for credit links, email and the feed `source=` tag |
 | Funding model | Pending | Business owner | See §3 |
-| Contact channels and scheduling tool | Pending | Operations | Work email, work Telegram, scheduling links |
+| Contact channels and scheduling tool | Pending | Operations | Work email, work Telegram, scheduling links; the Telegram and Discord links for the contact section (`CON-05`) |
+| Email delivery for contact messages | Pending | Operations | Needs the product domain and an email provider; until then the team reads messages with `npm run contact:list` (`CON-03`) |
 | How expert names appear (full name or first name) | Pending | Operations | Needs each expert's written consent |
 | Jobs module in the first release | Pending | Product owner | Recommended: after experts (phase 3) |
 | Privacy policy, terms of use, disclaimers | Pending | Legal | Include "no guarantee of work" and "experts give general guidance" |
@@ -405,6 +426,8 @@ Sizes are rough, for one or two developers.
 | AT-12 | (Jobs) Apply uses `apply_url` when present, else `listing_url`; never a description link. |
 | AT-13 | (Jobs) An incomplete feed read never closes a role. |
 | AT-14 | Deleting an account removes the member's personal data from requests within 30 days. |
+| AT-15 | A contact-form message without the rules confirmation, with a wrong email address or with a too-short message is refused with a clear message, and what was typed is kept. |
+| AT-16 | A fourth contact-form message from the same address within an hour is refused; a filled hidden field stores nothing. |
 
 ---
 

@@ -51,6 +51,8 @@ export const trendsConfig = {
     /** A platform needs this many open roles before its big-pay share is quoted. */
     minOpenRolesForShare: 20,
   },
+  /** Platforms page, pay section: how many platforms the "best odds of $100+" chart shows. */
+  bigPayOddsTop: 10,
   /** TRD-04: credit shown with every chart, page, share image and export. */
   credit: {
     name: "AITraining.jobs open data",
@@ -58,6 +60,36 @@ export const trendsConfig = {
     license: "CC BY 4.0",
     licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
   },
+} as const;
+
+/**
+ * Contact section on the Platforms page (CON-01 to CON-06, ADR 0005).
+ * Messages are stored on the server and never shown on any public page.
+ */
+export const contactConfig = {
+  /**
+   * Public community links. Each button appears only once its link is set here.
+   * Team or community channels only, never anyone's personal account (SEC-03).
+   */
+  telegramUrl: null as string | null,
+  discordUrl: null as string | null,
+  /** What visitors can pick in "Where are you stuck?". The first entry is the default. */
+  topics: [
+    { value: "choosing", label: "Choosing platforms" },
+    { value: "getting-in", label: "Getting accepted" },
+    { value: "more-work", label: "Getting more projects" },
+    { value: "pay", label: "Pay and payouts" },
+    { value: "my-field", label: "Work in my field" },
+    { value: "other", label: "Something else" },
+  ],
+  nameMaxChars: 80,
+  emailMaxChars: 254,
+  messageMinChars: 20,
+  messageMaxChars: 1000,
+  /** CON-04: messages accepted from one network address per hour. */
+  maxPerAddressPerHour: 3,
+  /** Mixed into the stored hash of the sender's network address, so the address itself is never kept. */
+  addressHashSecret: process.env.CONTACT_HASH_SECRET ?? "local-development-only",
 } as const;
 
 export const storageConfig = {
