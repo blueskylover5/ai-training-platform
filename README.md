@@ -7,7 +7,7 @@ A free service with two parts:
 
 The product baseline is [docs/system-design-v3.md](docs/system-design-v3.md). Architecture decisions are in [docs/adr](docs/adr).
 
-**Status:** Phase 1 (Trends) is in development.
+**Status:** Phase 1 (Trends) is in development. Daily collection, the trends overview page and the platform race page work; separate chart pages and share images are next.
 
 ## Stack
 
@@ -25,8 +25,14 @@ Requires Node.js 26 (see [.nvmrc](.nvmrc)).
 
 ```bash
 npm ci
-npm run dev        # http://localhost:3000
+npm run db:migrate       # create the local database in .data/pglite
+npm run trends:collect   # download today's AITraining.jobs figures
+npm run dev              # http://localhost:3000
 ```
+
+The home page shows the trends overview from the newest published figures, and `/platforms` shows the platform race. Run `trends:collect` once a day to add a day of history; running it twice on the same day changes nothing. It takes 2 to 3 minutes, most of it spent on gently paced per-platform searches (`TRD-11`).
+
+The local database (PGlite) can only be open in one program at a time, so stop `npm run dev` before running `db:migrate` or `trends:collect`. Production uses PostgreSQL (`DATABASE_URL`), which has no such limit.
 
 ## Scripts
 
@@ -38,6 +44,8 @@ npm run dev        # http://localhost:3000
 | `npm run typecheck` | Generate route types, then run the TypeScript compiler |
 | `npm test` | Run the test suite once |
 | `npm run test:watch` | Run tests in watch mode |
+| `npm run db:migrate` | Apply database migrations |
+| `npm run trends:collect` | Download, check and store the day's trend figures, then count each platform's new and big-pay roles (`TRD-01`, `TRD-02`, `TRD-11`) |
 
 Before opening a pull request, run `npm run lint && npm run typecheck && npm test && npm run build`.
 

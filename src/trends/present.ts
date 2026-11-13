@@ -63,6 +63,49 @@ export function publicPay(figure: PayFigure, minSamples: number = trendsConfig.m
   return { visible: true, label: "Advertised hourly pay", median, typicalLow, typicalHigh, rateSamples };
 }
 
+const countFormat = new Intl.NumberFormat("en-US");
+
+/** 4393 → "4,393" */
+export function formatCount(n: number): string {
+  return countFormat.format(n);
+}
+
+/** (75, "USD") → "$75" */
+export function formatMoney(amount: number, currency: string): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+  }).format(amount);
+}
+
+/** "2026-11-02" → "2 Nov" */
+export function formatShortDate(isoDate: string): string {
+  return toUtcDate(isoDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+}
+
+/** Signed change with its direction, for stat tiles: (4393, 4376) → { text: "+17", direction: "up" } */
+export function formatChange(current: number, previous: number): { text: string; direction: "up" | "down" | "flat" } {
+  const diff = current - previous;
+  if (diff === 0) return { text: "No change", direction: "flat" };
+  return { text: `${diff > 0 ? "+" : "−"}${formatCount(Math.abs(diff))}`, direction: diff > 0 ? "up" : "down" };
+}
+
+/**
+ * Axis scale with round tick values (1, 2, 2.5 or 5 × a power of ten) that covers `maxValue`.
+ * (503, 4) → { max: 600, ticks: [0, 200, 400, 600] }
+ */
+export function niceScale(maxValue: number, targetTicks = 4): { max: number; ticks: number[] } {
+  if (!(maxValue > 0)) return { max: 1, ticks: [0, 1] };
+  const rough = maxValue / targetTicks;
+  const power = 10 ** Math.floor(Math.log10(rough));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * power).find((s) => s >= rough) ?? 10 * power;
+  const max = Math.ceil(maxValue / step) * step;
+  const ticks: number[] = [];
+  for (let v = 0; v <= max + step / 2; v += step) ticks.push(Math.round(v * 1e6) / 1e6);
+  return { max, ticks };
+}
+
 /** TRD-09: true when the newest snapshot is older than the configured limit. */
 export function isStale(lastFetchedAt: Date, now: Date, hours: number = trendsConfig.staleAfterHours): boolean {
   return now.getTime() - lastFetchedAt.getTime() > hours * 60 * 60 * 1000;

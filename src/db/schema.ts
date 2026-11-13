@@ -17,7 +17,7 @@ export const trendSnapshots = pgTable(
   {
     id: serial("id").primaryKey(),
     dataDate: date("data_date").notNull(),
-    fileKind: text("file_kind", { enum: ["roles", "pay"] }).notNull(),
+    fileKind: text("file_kind", { enum: ["roles", "pay", "platform_stats"] }).notNull(),
     sourceUrl: text("source_url").notNull(),
     sourceUpdatedAt: timestamp("source_updated_at", { withTimezone: true }),
     rawKey: text("raw_key").notNull(),
@@ -101,6 +101,32 @@ export const trendPlatforms = pgTable(
   (t) => [
     primaryKey({ columns: [t.snapshotId, t.slug] }),
     index("trend_platforms_slug_date_idx").on(t.slug, t.dataDate),
+  ],
+);
+
+/**
+ * Per-platform counts from the AITraining.jobs job search (TRD-11, ADR 0004). Each row keeps
+ * the search settings it was counted with, so changing them later never mixes definitions.
+ */
+export const trendPlatformStats = pgTable(
+  "trend_platform_stats",
+  {
+    snapshotId: snapshotRef(),
+    dataDate: date("data_date").notNull(),
+    slug: text("slug").notNull(),
+    name: text("name").notNull(),
+    /** Open roles the search finds for this platform, with no other filter. */
+    openRoles: integer("open_roles").notNull(),
+    /** Open roles first listed on or after `newSince`. */
+    newRoles: integer("new_roles").notNull(),
+    newSince: date("new_since").notNull(),
+    /** Open roles whose advertised hourly pay reaches `bigPayMinHourlyUsd` at the top of its range. */
+    bigPayRoles: integer("big_pay_roles").notNull(),
+    bigPayMinHourlyUsd: integer("big_pay_min_hourly_usd").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.snapshotId, t.slug] }),
+    index("trend_platform_stats_slug_date_idx").on(t.slug, t.dataDate),
   ],
 );
 

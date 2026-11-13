@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
+import { siteConfig, trendsConfig } from "@/config";
+import { MainNav } from "./_components/main-nav";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,18 +16,34 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Training Opportunity & Expert Support Platform",
-  description:
-    "Market trends for AI training work, and help from experts who have done it.",
+  title: siteConfig.name,
+  description: siteConfig.description,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const { credit } = trendsConfig;
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col">
+        <header className="border-b border-line">
+          <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+            <Link href="/" className="font-semibold tracking-tight text-ink hover:no-underline">
+              {siteConfig.shortName}
+            </Link>
+            <MainNav />
+          </div>
+        </header>
+        {children}
+        <footer className="border-t border-line">
+          <div className="mx-auto w-full max-w-5xl px-4 py-6 text-xs leading-5 text-ink-2 sm:px-6">
+            <p>
+              Trend figures come from <a href={credit.url}>{credit.name}</a>, licensed under{" "}
+              <a href={credit.licenseUrl}>{credit.license}</a>. We publish summaries only, not individual roles, and
+              are not affiliated with AITraining.jobs or any hiring platform.
+            </p>
+          </div>
+        </footer>
+      </body>
     </html>
   );
 }
