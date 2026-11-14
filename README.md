@@ -32,6 +32,8 @@ npm run dev              # http://localhost:3000
 
 The home page shows the trends overview from the newest published figures, and `/platforms` shows the Platforms guide: the platform race, projects by sector, pay and the contact form. Run `trends:collect` once a day to add a day of history; running it twice on the same day changes nothing. It takes 2 to 3 minutes, most of it spent on gently paced per-platform searches (`TRD-11`).
 
+In production, set `CONTACT_HASH_SECRET` to a random value of at least 32 characters; the server will not start without it (`CON-04`, see `.env.example`).
+
 The local database (PGlite) can only be open in one program at a time, so stop `npm run dev` before running `db:migrate` or `trends:collect`. Production uses PostgreSQL (`DATABASE_URL`), which has no such limit.
 
 ## Scripts

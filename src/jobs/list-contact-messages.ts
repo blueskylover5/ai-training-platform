@@ -1,10 +1,11 @@
 /**
- * Prints the newest contact-form messages (CON-06). Run with `npm run contact:list`.
+ * Prints the newest contact-form messages (CON-03). Run with `npm run contact:list`.
  * With the local database (PGlite), stop the dev server first: only one process can open it.
  */
 import { desc } from "drizzle-orm";
 import { storageConfig } from "../config";
 import { openDb } from "../db/client";
+import { safeForTerminal } from "../contact/terminal";
 import { contactMessages } from "../db/schema";
 
 const LIMIT = 50;
@@ -29,10 +30,11 @@ async function main() {
       console.log("No contact messages yet.");
       return;
     }
+    // Everything below came from the public form, so control characters are neutralised first.
     for (const row of rows) {
       console.log(`#${row.id} · ${row.createdAt.toISOString()} · ${row.status}`);
-      console.log(`From: ${row.name ?? "(no name)"} <${row.email}> · Topic: ${row.topic}`);
-      console.log(row.message);
+      console.log(`From: ${safeForTerminal(row.name ?? "(no name)")} <${safeForTerminal(row.email)}> · Topic: ${safeForTerminal(row.topic)}`);
+      console.log(safeForTerminal(row.message));
       console.log("—".repeat(40));
     }
   } finally {

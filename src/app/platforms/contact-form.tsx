@@ -16,6 +16,8 @@ export interface ContactFormSettings {
   emailMaxChars: number;
   messageMinChars: number;
   messageMaxChars: number;
+  /** Name of the hidden anti-bot field (CON-04). */
+  honeypotField: string;
 }
 
 /** The contact form (CON-01 to CON-03). Works without JavaScript too; the Server Action checks everything again. */
@@ -27,7 +29,7 @@ export function ContactForm({ settings }: { settings: ContactFormSettings }) {
 
 function ContactFormRound({ settings, onAnother }: { settings: ContactFormSettings; onAnother: () => void }) {
   const [state, formAction, pending] = useActionState(sendContactMessage, initial);
-  const values = state.status === "invalid" || state.status === "limited" ? state.values : null;
+  const values = state.status === "invalid" || state.status === "limited" || state.status === "error" ? state.values : null;
   const errors = state.status === "invalid" ? state.errors : {};
 
   // After each answer the form starts again from what was typed: a new key remounts it, because
@@ -78,6 +80,11 @@ function ContactFormRound({ settings, onAnother }: { settings: ContactFormSettin
       {state.status === "limited" && (
         <p role="alert" className="rounded-xl border border-warning/60 bg-warning-wash px-5 py-4 text-base leading-7 text-ink">
           You&apos;ve already sent a few messages in the last hour. Please try again later.
+        </p>
+      )}
+      {state.status === "error" && (
+        <p role="alert" className="rounded-xl border border-error/40 bg-error-wash px-5 py-4 text-base leading-7 text-ink">
+          Sorry, something went wrong on our side and your message wasn&apos;t sent. Please try again in a few minutes.
         </p>
       )}
       {state.status === "invalid" && (
@@ -175,10 +182,11 @@ function ContactFormRound({ settings, onAnother }: { settings: ContactFormSettin
         {errors.policy && <FieldError id="contact-policy-error">{errors.policy}</FieldError>}
       </div>
 
-      {/* CON-04: left empty by people, who never see it; bots tend to fill it in. */}
+      {/* CON-04: left empty by people, who never see it; bots tend to fill it in. Its name and label
+          match no profile field, so browsers and password managers have nothing to autofill. */}
       <div aria-hidden="true" className="absolute -left-[10000px] h-px w-px overflow-hidden">
-        <label htmlFor="contact-website">Website</label>
-        <input id="contact-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+        <label htmlFor="contact-hp">Leave this field empty</label>
+        <input id="contact-hp" name={settings.honeypotField} type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

@@ -4,15 +4,17 @@ import { Suspense, type ReactNode } from "react";
 import { siteConfig, trendsConfig } from "@/config";
 import { getDb } from "@/db/server";
 import { bigPayOdds, payHighlights, sectorShares, type BigPayOdds, type SectorShare } from "@/trends/insights";
-import { formatCount, formatDataDate, formatMoney, formatShortDate, isStale, publicPay } from "@/trends/present";
-import { getPlatformRace, getTrendsOverview, type PlatformRaceData, type TrendsOverview } from "@/trends/queries";
+import { formatCount, formatDataDate, formatMoney, formatShortDate, isStale } from "@/trends/present";
+import { getPlatformGuide, type PlatformGuideData, type PlatformRaceData } from "@/trends/queries";
 import { buildRaces, toBoard } from "@/trends/race";
 import { ChartCard, DataExtras, DataTable } from "../_components/chart-card";
-import { BarList, PayRanges } from "../_components/charts";
+import { BarList } from "../_components/charts";
 import { NoDataYet, StaleNotice } from "../_components/notices";
 import { pageWidth } from "../_components/page-width";
+import { PayBySectorCard } from "../_components/pay-by-sector-card";
 import { ContactSection } from "./contact-section";
 import { RaceBoard } from "./race-board";
+import { ScrollToHash } from "./scroll-to-hash";
 
 export const metadata: Metadata = {
   title: `AI training platforms: who's hiring, which fields and what they pay · ${siteConfig.shortName}`,
@@ -84,12 +86,9 @@ function Hero() {
 async function LiveSections() {
   // Read the database only when a request comes in, never while building (no database at build time).
   await io();
-  const db = getDb();
-  const [overview, race] = await Promise.all([
-    getTrendsOverview(db, { weeks: trendsConfig.overviewWeeks }),
-    getPlatformRace(db),
-  ]);
-  if (!overview || !race) {
+  // One consistent read, so every section describes the same published files.
+  const guide = await getPlatformGuide(getDb());
+  if (!guide) {
     return (
       <div className={`${pageWidth} py-16`}>
         <NoDataYet />
@@ -97,13 +96,14 @@ async function LiveSections() {
     );
   }
 
-  const stale = isStale(overview.roles.fetchedAt, new Date());
+  const stale = isStale(guide.roles.fetchedAt, new Date());
   return (
     <>
-      <AtAGlance overview={overview} race={race} stale={stale} />
-      <PlatformsSection race={race} />
-      <SectorsSection overview={overview} />
-      <PaySection overview={overview} race={race} />
+      <AtAGlance guide={guide} stale={stale} />
+      <PlatformsSection race={guide.race} />
+      <SectorsSection guide={guide} />
+      <PaySection guide={guide} />
+      <ScrollToHash />
     </>
   );
 }
@@ -147,8 +147,9 @@ function PageSection({
   );
 }
 
-function AtAGlance({ overview, race, stale }: { overview: TrendsOverview; race: PlatformRaceData; stale: boolean }) {
-  const { totals } = overview.roles;
+function AtAGlance({ guide, stale }: { guide: PlatformGuideData; stale: boolean }) {
+  const { totals } = guide.roles;
+  const { race } = guide;
   const counted = race.platforms.flatMap((p) => (p.stats ? [p.stats] : []));
   const bigPay = race.stats ? counted.reduce((sum, s) => sum + s.bigPayRoles, 0) : null;
   const tiles = [
@@ -191,10 +192,17 @@ function PlatformsSection({ race }: { race: PlatformRaceData }) {
       eyebrow="Platform status"
       title="How are the platforms doing?"
       intro={
-        <p>
-          {formatCount(race.platforms.length)} platforms race on open roles, on new roles this week and on big pay.
-          Pick a race and watch the order change.
-        </p>
+        race.stats ? (
+          <p>
+            {formatCount(race.platforms.length)} platforms race on open roles, on new roles this week and on big pay.
+            Pick a race and watch the order change.
+          </p>
+        ) : (
+          <p>
+            {formatCount(race.platforms.length)} platforms race on open roles. Races on new roles and big pay start
+            after the next daily update.
+          </p>
+        )
       }
     >
       <ChartCard
@@ -246,8 +254,8 @@ function RaceTable({ data }: { data: PlatformRaceData }) {
   );
 }
 
-function SectorsSection({ overview }: { overview: TrendsOverview }) {
-  const { totals, workTypes, dataDate } = overview.roles;
+function SectorsSection({ guide }: { guide: PlatformGuideData }) {
+  const { totals, workTypes, dataDate } = guide.roles;
   const sectors = sectorShares(workTypes, totals.openRoles);
   return (
     <PageSection
@@ -304,8 +312,9 @@ function SectorCard({ sector }: { sector: SectorShare }) {
   );
 }
 
-function PaySection({ overview, race }: { overview: TrendsOverview; race: PlatformRaceData }) {
-  const payRows = overview.pay?.rows ?? [];
+function PaySection({ guide }: { guide: PlatformGuideData }) {
+  const { race } = guide;
+  const payRows = guide.pay?.rows ?? [];
   const odds = bigPayOdds(race.platforms, trendsConfig.race.minOpenRolesForShare);
   const highlights = payHighlights(race.platforms, race.stats?.bigPayMinHourlyUsd ?? null, payRows, odds);
   const threshold = race.stats ? `$${formatCount(race.stats.bigPayMinHourlyUsd)}` : null;
@@ -370,7 +379,13 @@ function PaySection({ overview, race }: { overview: TrendsOverview; race: Platfo
             ))}
           </ul>
         )}
-        <PayBySector overview={overview} />
+        <PayBySectorCard
+          id="pay-by-sector"
+          headingLevel="h3"
+          title="Advertised hourly pay by sector"
+          rowLabel="Sector"
+          pay={guide.pay}
+        />
         <BigPayOddsCard race={race} odds={odds} />
       </div>
     </PageSection>
@@ -382,50 +397,10 @@ function listOf(items: string[]): string {
   return items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
-function PayBySector({ overview }: { overview: TrendsOverview }) {
-  if (!overview.pay || overview.pay.rows.length === 0) return null;
-  const { dataDate, rows } = overview.pay;
-  const items = rows.map((r) => ({ ...r, key: r.slug, visible: publicPay(r).visible }));
-  const totalSamples = rows.reduce((sum, r) => sum + r.rateSamples, 0);
-  return (
-    <ChartCard
-      id="pay-by-sector"
-      headingLevel="h3"
-      title="Advertised hourly pay by sector"
-      dataDate={dataDate}
-      description={
-        <>
-          The dot is the median; the bar is the typical range. Based on {formatCount(totalSamples)} advertised rates.
-          Figures resting on fewer than {trendsConfig.minPaySamples} rates are hidden.
-        </>
-      }
-      table={
-        <DataTable
-          caption="Advertised hourly pay by sector"
-          columns={["Sector", "Median", "Typical range", "Rates", "Platforms"]}
-          rows={items.map((r) => ({
-            key: r.key,
-            cells: r.visible
-              ? [
-                  r.label,
-                  formatMoney(r.median, r.currency),
-                  `${formatMoney(r.typicalLow, r.currency)}–${formatMoney(r.typicalHigh, r.currency)}`,
-                  formatCount(r.rateSamples),
-                  formatCount(r.platforms),
-                ]
-              : [r.label, "Not shown", "Not shown", formatCount(r.rateSamples), formatCount(r.platforms)],
-          }))}
-        />
-      }
-    >
-      <PayRanges items={items} hiddenNote={`Fewer than ${trendsConfig.minPaySamples} advertised rates, so not shown`} />
-    </ChartCard>
-  );
-}
-
 function BigPayOddsCard({ race, odds }: { race: PlatformRaceData; odds: BigPayOdds[] }) {
   const { stats } = race;
-  if (!stats) return null;
+  // Nothing to rank before the first counts, or when no platform has enough roles with big pay.
+  if (!stats || odds.length === 0) return null;
   const threshold = `$${formatCount(stats.bigPayMinHourlyUsd)}`;
   const top = odds.slice(0, trendsConfig.bigPayOddsTop);
   const min = trendsConfig.race.minOpenRolesForShare;

@@ -10,23 +10,19 @@ export interface SectorShare {
   slug: string;
   label: string;
   openRoles: number;
-  /** Rounded share of all open roles, 0 to 100. */
+  /** Rounded share of all open roles, 0 to 100; the card's bar shows it too. */
   sharePercent: number;
-  /** Size of this sector relative to the biggest one, 0 to 1, for its bar. */
-  relative: number;
   rank: number;
 }
 
 /** Sectors (kinds of work), most open roles first, with each one's share of all open roles. */
 export function sectorShares(workTypes: readonly WorkTypeCount[], totalOpenRoles: number): SectorShare[] {
   const sorted = [...workTypes].sort((a, b) => b.openCount - a.openCount || a.label.localeCompare(b.label));
-  const biggest = Math.max(1, sorted[0]?.openCount ?? 0);
   return sorted.map((w, i) => ({
     slug: w.slug,
     label: w.label,
     openRoles: w.openCount,
     sharePercent: totalOpenRoles > 0 ? Math.round((w.openCount / totalOpenRoles) * 100) : 0,
-    relative: w.openCount / biggest,
     rank: i + 1,
   }));
 }
@@ -43,7 +39,8 @@ export interface BigPayOdds {
 /**
  * Platforms ranked by the share of their open roles that advertise big pay (TRD-11 counts).
  * Only platforms with at least `minOpenRoles` open roles count, so a platform with two roles
- * cannot top the list by chance.
+ * cannot top the list by chance. The one ranking behind both the race commentary's "Best odds"
+ * and the Pay section, so they always name the same platform.
  */
 export function bigPayOdds(platforms: readonly RacePlatform[], minOpenRoles: number): BigPayOdds[] {
   return platforms

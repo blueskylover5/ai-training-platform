@@ -18,6 +18,7 @@ export function ContactSection() {
     emailMaxChars: contactConfig.emailMaxChars,
     messageMinChars: contactConfig.messageMinChars,
     messageMaxChars: contactConfig.messageMaxChars,
+    honeypotField: contactConfig.honeypotField,
   };
   // CON-05: a channel appears only once its link is set in the configuration.
   const channels = [

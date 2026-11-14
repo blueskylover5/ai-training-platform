@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { DbHandle } from "../../src/db/client";
 import { collectTrends, type CollectDeps } from "../../src/trends/collect";
 import { collectPlatformStats } from "../../src/trends/platform-stats";
-import { getPlatformRace, getTrendsOverview } from "../../src/trends/queries";
+import { getPlatformGuide, getPlatformRace, getTrendsOverview } from "../../src/trends/queries";
 import { MemoryRawStore } from "../../src/trends/raw-store";
 import { createTestDb, PAY_FIXTURE, readFixture, resetTrendTables, ROLES_FIXTURE } from "../helpers";
 
@@ -162,5 +162,29 @@ describe("getPlatformRace (TRD-11)", () => {
     const race = await getPlatformRace(handle.db);
 
     expect(race?.stats).toBeNull();
+  });
+
+  describe("getPlatformGuide", () => {
+    it("returns null before anything is published", async () => {
+      expect(await getPlatformGuide(handle.db)).toBeNull();
+    });
+
+    it("reads the same figures as the overview and the race, in one go", async () => {
+      await collect(readFixture(ROLES_FIXTURE), readFixture(PAY_FIXTURE));
+      await collectStats();
+
+      const guide = await getPlatformGuide(handle.db);
+      const overview = await getTrendsOverview(handle.db, { weeks: 4 });
+      const race = await getPlatformRace(handle.db);
+
+      expect(guide?.roles).toEqual({
+        dataDate: overview?.roles.dataDate,
+        fetchedAt: overview?.roles.fetchedAt,
+        totals: overview?.roles.totals,
+        workTypes: overview?.roles.workTypes,
+      });
+      expect(guide?.pay).toEqual(overview?.pay);
+      expect(guide?.race).toEqual(race);
+    });
   });
 });

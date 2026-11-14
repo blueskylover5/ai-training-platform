@@ -7,16 +7,15 @@ import {
   formatChange,
   formatCount,
   formatDataDate,
-  formatMoney,
   formatShortDate,
   isStale,
-  publicPay,
 } from "@/trends/present";
 import { getTrendsOverview, type TotalsFigures, type TrendsOverview } from "@/trends/queries";
 import { ChartCard, DataTable } from "./_components/chart-card";
-import { BarList, PayRanges, WeeklyColumns } from "./_components/charts";
+import { BarList, WeeklyColumns } from "./_components/charts";
 import { NoDataYet, StaleNotice } from "./_components/notices";
 import { pageWidth } from "./_components/page-width";
+import { PayBySectorCard } from "./_components/pay-by-sector-card";
 
 export default function Home() {
   return (
@@ -150,45 +149,14 @@ function KindOfWorkChart({ data }: { data: TrendsOverview }) {
 }
 
 function PayChart({ data }: { data: TrendsOverview }) {
-  if (!data.pay || data.pay.rows.length === 0) return null;
-  const { dataDate, rows } = data.pay;
-  const items = rows.map((r) => ({ ...r, key: r.slug, visible: publicPay(r).visible }));
-  const totalSamples = rows.reduce((sum, r) => sum + r.rateSamples, 0);
-  const hiddenNote = `Fewer than ${trendsConfig.minPaySamples} advertised rates, so not shown`;
-
   return (
-    <ChartCard
+    <PayBySectorCard
       id="pay"
       title="Advertised hourly pay by kind of work"
-      dataDate={dataDate}
-      description={
-        <>
-          What open roles advertise per hour, not what people earn. The dot is the median; the bar is the typical
-          range. Based on {formatCount(totalSamples)} advertised rates. Figures resting on fewer than{" "}
-          {trendsConfig.minPaySamples} rates are hidden.
-        </>
-      }
-      table={
-        <DataTable
-          caption="Advertised hourly pay by kind of work"
-          columns={["Kind of work", "Median", "Typical range", "Rates", "Platforms"]}
-          rows={items.map((r) => ({
-            key: r.key,
-            cells: r.visible
-              ? [
-                  r.label,
-                  formatMoney(r.median, r.currency),
-                  `${formatMoney(r.typicalLow, r.currency)}–${formatMoney(r.typicalHigh, r.currency)}`,
-                  formatCount(r.rateSamples),
-                  formatCount(r.platforms),
-                ]
-              : [r.label, "Not shown", "Not shown", formatCount(r.rateSamples), formatCount(r.platforms)],
-          }))}
-        />
-      }
-    >
-      <PayRanges items={items} hiddenNote={hiddenNote} />
-    </ChartCard>
+      rowLabel="Kind of work"
+      lead="What open roles advertise per hour, not what people earn. "
+      pay={data.pay}
+    />
   );
 }
 

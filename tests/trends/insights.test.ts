@@ -20,16 +20,16 @@ describe("sectorShares", () => {
       ],
       1000,
     );
-    expect(sectors.map((s) => [s.label, s.rank, s.sharePercent, s.relative])).toEqual([
-      ["Law", 1, 60, 1],
-      ["Coding", 2, 30, 0.5],
-      ["Art", 3, 0, 0.005],
+    expect(sectors.map((s) => [s.label, s.rank, s.sharePercent])).toEqual([
+      ["Law", 1, 60],
+      ["Coding", 2, 30],
+      ["Art", 3, 0],
     ]);
   });
 
   it("copes with no open roles at all", () => {
     expect(sectorShares([{ slug: "a", label: "A", openCount: 0 }], 0)).toEqual([
-      { slug: "a", label: "A", openRoles: 0, sharePercent: 0, relative: 0, rank: 1 },
+      { slug: "a", label: "A", openRoles: 0, sharePercent: 0, rank: 1 },
     ]);
   });
 });

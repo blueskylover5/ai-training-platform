@@ -1,12 +1,12 @@
-import { createHash } from "node:crypto";
-import { and, count, eq, gt } from "drizzle-orm";
+import { and, count, eq, gt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { contactConfig } from "../config";
 import type { Db } from "../db/client";
 import { contactMessages } from "../db/schema";
+import { hashAddress } from "./address";
 
 /*
- * The contact form's server side (CON-01 to CON-06, ADR 0005): check the fields, apply the
+ * The contact form's server side (CON-01 to CON-04, ADR 0005): check the fields, apply the
  * per-hour limit, and store the message. Kept apart from the Server Action so tests can call it.
  */
 
@@ -16,7 +16,9 @@ export type ContactResult =
   | { status: "idle" }
   | { status: "sent"; name: string | null; email: string }
   | { status: "invalid"; errors: Partial<Record<ContactField, string>>; values: ContactValues }
-  | { status: "limited"; values: ContactValues };
+  | { status: "limited"; values: ContactValues }
+  /** Something failed on our side (database, configuration); nothing was stored. */
+  | { status: "error"; values: ContactValues };
 
 /** What the visitor typed, sent back so the form keeps it after an error. */
 export interface ContactValues {
@@ -31,6 +33,12 @@ export interface ContactValues {
 const topicValues = contactConfig.topics.map((t) => t.value) as [string, ...string[]];
 
 const text = (value: FormDataEntryValue | null) => (typeof value === "string" ? value.trim() : "");
+
+/**
+ * Form submissions send line breaks as CRLF; the browser's counter and maxlength count one
+ * character each. Normalising first means both sides count the same (CON-02).
+ */
+const multiline = (value: FormDataEntryValue | null) => text(value).replace(/\r\n?/g, "\n");
 
 const contactSchema = z.object({
   name: z.string().max(contactConfig.nameMaxChars, `Please keep your name under ${contactConfig.nameMaxChars} characters.`),
@@ -47,15 +55,12 @@ const contactSchema = z.object({
   policy: z.literal("yes", "Please confirm you will follow your platform's rules."),
 });
 
-/** Salted hash of the sender's network address; the address itself is never stored. */
-export function hashAddress(address: string, secret: string = contactConfig.addressHashSecret): string {
-  return createHash("sha256").update(`${secret}:${address}`).digest("hex");
-}
-
 export interface SubmitContext {
-  /** The sender's network address, or "unknown". */
+  /** The sender's network address (see clientAddress), or "unknown". */
   address: string;
   now?: Date;
+  /** Overrides the hash secret; tests use it. */
+  hashSecret?: string;
 }
 
 export async function submitContactMessage(db: Db, form: FormData, context: SubmitContext): Promise<ContactResult> {
@@ -63,12 +68,14 @@ export async function submitContactMessage(db: Db, form: FormData, context: Subm
     name: text(form.get("name")),
     email: text(form.get("email")),
     topic: text(form.get("topic")),
-    message: text(form.get("message")),
+    message: multiline(form.get("message")),
     policy: text(form.get("policy")) === "yes",
   };
 
   // CON-04: a hidden field people never see. Bots that fill it are told "sent" and nothing is stored.
-  if (text(form.get("website")) !== "") {
+  // The log line shows how often it happens, in case real visitors ever trip it.
+  if (text(form.get(contactConfig.honeypotField)) !== "") {
+    console.warn("[contact] Hidden anti-bot field was filled; message not stored.");
     return { status: "sent", name: values.name || null, email: values.email };
   }
 
@@ -83,25 +90,35 @@ export async function submitContactMessage(db: Db, form: FormData, context: Subm
   }
 
   const now = context.now ?? new Date();
-  const addressHash = hashAddress(context.address);
-  const hourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-  const [{ recent }] = await db
-    .select({ recent: count() })
-    .from(contactMessages)
-    .where(and(eq(contactMessages.addressHash, addressHash), gt(contactMessages.createdAt, hourAgo)));
-  if (recent >= contactConfig.maxPerAddressPerHour) {
-    return { status: "limited", values };
-  }
-
   const { name, email, topic, message } = parsed.data;
-  await db.insert(contactMessages).values({
-    createdAt: now,
-    name: name === "" ? null : name,
-    email,
-    topic,
-    message,
-    policyConfirmedAt: now,
-    addressHash,
-  });
+  try {
+    const addressHash = hashAddress(context.address, context.hashSecret);
+    const hourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    // CON-04: count and insert under a lock on this address, so simultaneous messages
+    // cannot all see "fewer than the limit" and all be stored.
+    const stored = await db.transaction(async (tx) => {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${addressHash}, 0))`);
+      const [{ recent }] = await tx
+        .select({ recent: count() })
+        .from(contactMessages)
+        .where(and(eq(contactMessages.addressHash, addressHash), gt(contactMessages.createdAt, hourAgo)));
+      if (recent >= contactConfig.maxPerAddressPerHour) return false;
+      await tx.insert(contactMessages).values({
+        createdAt: now,
+        name: name === "" ? null : name,
+        email,
+        topic,
+        message,
+        policyConfirmedAt: now,
+        addressHash,
+      });
+      return true;
+    });
+    if (!stored) return { status: "limited", values };
+  } catch (error) {
+    // The visitor keeps what they typed and can try again; the details go to the server log only.
+    console.error("[contact] Could not store a contact message:", error);
+    return { status: "error", values };
+  }
   return { status: "sent", name: name === "" ? null : name, email };
 }

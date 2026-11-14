@@ -88,8 +88,24 @@ export const contactConfig = {
   messageMaxChars: 1000,
   /** CON-04: messages accepted from one network address per hour. */
   maxPerAddressPerHour: 3,
-  /** Mixed into the stored hash of the sender's network address, so the address itself is never kept. */
-  addressHashSecret: process.env.CONTACT_HASH_SECRET ?? "local-development-only",
+  /**
+   * CON-04: where the sender's network address comes from. A hosting proxy appends the address it
+   * saw to this header, so we read the entry `trustedProxyHops` from the end; anything the visitor
+   * sent in the header themselves sits further left and is never used. Depends on the host: one
+   * proxy in front of the app (Vercel, nginx, a load balancer) is 1.
+   */
+  address: {
+    header: process.env.CONTACT_ADDRESS_HEADER ?? "x-forwarded-for",
+    trustedProxyHops: Number(process.env.CONTACT_TRUSTED_PROXY_HOPS ?? "1") || 1,
+  },
+  /**
+   * CON-04: the stored address hash mixes in CONTACT_HASH_SECRET. Production refuses to start
+   * without one at least this long; elsewhere a fixed development value stands in.
+   */
+  hashSecretMinChars: 32,
+  developmentHashSecret: "local-development-only",
+  /** CON-04: the hidden anti-bot field. A name and label browsers and password managers don't autofill. */
+  honeypotField: "leave_this_empty",
 } as const;
 
 export const storageConfig = {

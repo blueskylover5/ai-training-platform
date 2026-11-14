@@ -270,8 +270,8 @@ Until expert matching launches, the Platforms page has a contact section for any
 |---|---|
 | `CON-01` | The Platforms page has a contact section that anyone can use without signing in: an email form, plus Telegram and Discord links. It offers general help (choosing platforms, getting accepted, finding work, pay, using your field). It does not replace expert contact requests, which still need sign-in (`EXP-01`). |
 | `CON-02` | The form asks for an email address, a topic from a fixed list, a message (20 to 1,000 characters) and, optionally, a name. The sender MUST tick the same confirmation as `EXP-02`. The server checks every field again. |
-| `CON-03` | Messages are stored on the server only and never shown on any public page. Until an email provider is chosen (§13), the team reads them with `npm run contact:list`. |
-| `CON-04` | At most 3 messages per network address per hour, and a hidden field turns bots away (`SEC-04`). The address is stored only as a salted hash. |
+| `CON-03` | Messages are stored on the server only and never shown on any public page. Until an email provider is chosen (§13), the team reads them with `npm run contact:list`, which neutralises control characters in visitor text before printing it. |
+| `CON-04` | At most 3 messages per network address per hour, and a hidden field turns bots away (`SEC-04`). The address is the one the hosting proxy recorded (a setting that must match the host), never one the visitor sends, and it is stored only as a hash mixed with a server secret. In production the server refuses to start without that secret (at least 32 characters). The count and the insert happen under a lock, so simultaneous messages cannot exceed the limit. |
 | `CON-05` | The Telegram and Discord buttons appear only once their links are set in configuration. They are team or community channels, never anyone's personal account (`SEC-03`). |
 | `CON-06` | The section says plainly that we never ask for platform logins or passwords and never do assessments or tasks for anyone, and asks people not to send task content (`EXP-12`, Appendix A). |
 
