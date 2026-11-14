@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PlatformRaceData } from "../../src/trends/queries";
+import { bigPayOdds } from "../../src/trends/insights";
 import { buildRaces, ordinal, rankEntries, toBoard } from "../../src/trends/race";
 
 const OPTIONS = { size: 3, minOpenRolesForShare: 20 };
@@ -84,6 +85,16 @@ describe("buildRaces (TRD-11)", () => {
     // TRD-07: advertised pay, never earnings.
     expect(bigPay.description).toContain("not what people earn");
     expect(bigPay.entries[0].detail).toBe("50% of its 300 open roles");
+  });
+
+  it("names the same best-odds platform as the Pay section, even when rounded shares tie", () => {
+    const data = raceData();
+    // Both round to 33%, but Smallco's 10 of 30 is the better share than Hugeco's 330 of 1,000.
+    data.platforms = [platform("huge", "Hugeco", 1000, 0, 330), platform("small", "Smallco", 30, 0, 10)];
+    const [, , pay] = buildRaces(data, OPTIONS);
+
+    expect(bigPayOdds(data.platforms, OPTIONS.minOpenRolesForShare)[0].name).toBe("Smallco");
+    expect(pay.commentary).toContain("Best odds: 33% of Smallco's 30 open roles advertise $100+.");
   });
 
   it("calls a tie at the front a tie", () => {

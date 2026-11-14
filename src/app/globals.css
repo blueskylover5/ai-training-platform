@@ -1,24 +1,31 @@
 @import "tailwindcss";
 
 /*
- * Colour tokens. Chart colours follow a validated palette: one blue series,
- * stepped separately for the light and dark surfaces (not an automatic flip).
+ * Colour tokens. The site is light only: black text on a white page, by request.
+ * Chart colours follow a validated palette: one blue series on white.
  */
 :root {
   color-scheme: light;
-  --page: #f9f9f7;
-  --surface: #fcfcfb;
+  --page: #ffffff;
+  --surface: #ffffff;
+  /* A soft grey for alternate sections and quiet panels. */
+  --tint: #f5f6f8;
   --ink: #0b0b0b;
-  --ink-2: #52514e;
-  --ink-3: #898781;
-  --grid: #e1e0d9;
+  --ink-2: #45443f;
+  --ink-3: #6b6a64;
+  --grid: #e4e3dd;
   --baseline: #c3c2b7;
   --line: rgba(11, 11, 11, 0.1);
+  --line-strong: rgba(11, 11, 11, 0.24);
   --series: #2a78d6;
   --series-soft: #86b6ef;
   --link: #1c5cab;
   --warning: #fab219;
   --warning-wash: #fdf3dc;
+  --error: #b42318;
+  --error-wash: #fdeceb;
+  --good: #1a7f37;
+  --good-wash: #e6f4ea;
   /* Rank badges on the platform race; decoration, not a data colour. */
   --gold: #f4c542;
   --silver: #d3d6db;
@@ -26,43 +33,26 @@
   --medal-ink: #0b0b0b;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --page: #0d0d0d;
-    --surface: #1a1a19;
-    --ink: #f0efec;
-    --ink-2: #c3c2b7;
-    --ink-3: #898781;
-    --grid: #2c2c2a;
-    --baseline: #383835;
-    --line: rgba(255, 255, 255, 0.1);
-    --series: #3987e5;
-    --series-soft: #184f95;
-    --link: #86b6ef;
-    --warning: #fab219;
-    --warning-wash: #2b2412;
-    --gold: #d9ad2b;
-    --silver: #b4b9c1;
-    --bronze: #c98c55;
-    --medal-ink: #0b0b0b;
-  }
-}
-
 @theme inline {
   --color-page: var(--page);
   --color-surface: var(--surface);
+  --color-tint: var(--tint);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
   --color-grid: var(--grid);
   --color-baseline: var(--baseline);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-series: var(--series);
   --color-series-soft: var(--series-soft);
   --color-link: var(--link);
   --color-warning: var(--warning);
   --color-warning-wash: var(--warning-wash);
+  --color-error: var(--error);
+  --color-error-wash: var(--error-wash);
+  --color-good: var(--good);
+  --color-good-wash: var(--good-wash);
   --color-gold: var(--gold);
   --color-silver: var(--silver);
   --color-bronze: var(--bronze);
@@ -75,10 +65,23 @@
 
 /* Base styles sit in the base layer so utility classes (text-ink and so on) can override them. */
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
   body {
     background: var(--page);
     color: var(--ink);
     font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    -webkit-text-size-adjust: 100%;
   }
 
   a {

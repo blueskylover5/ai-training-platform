@@ -85,6 +85,43 @@ async function totalsFor(db: Db, snapshotId: number): Promise<TotalsFigures | nu
   return row ?? null;
 }
 
+async function workTypesFor(db: Db, snapshotId: number): Promise<WorkTypeCount[]> {
+  return db
+    .select({ slug: trendWorkTypes.slug, label: trendWorkTypes.label, openCount: trendWorkTypes.openCount })
+    .from(trendWorkTypes)
+    .where(eq(trendWorkTypes.snapshotId, snapshotId))
+    .orderBy(desc(trendWorkTypes.openCount), asc(trendWorkTypes.label));
+}
+
+async function platformsFor(db: Db, snapshotId: number): Promise<PlatformCount[]> {
+  return db
+    .select({ slug: trendPlatforms.slug, name: trendPlatforms.name, openCount: trendPlatforms.openCount })
+    .from(trendPlatforms)
+    .where(eq(trendPlatforms.snapshotId, snapshotId))
+    .orderBy(desc(trendPlatforms.openCount), asc(trendPlatforms.name));
+}
+
+async function latestPay(db: Db): Promise<TrendsOverview["pay"]> {
+  const [latest] = await latestPublished(db, "pay", 1);
+  if (!latest) return null;
+  const rows = await db
+    .select({
+      slug: trendPay.slug,
+      label: trendPay.label,
+      currency: trendPay.currency,
+      unit: trendPay.unit,
+      median: trendPay.median,
+      typicalLow: trendPay.typicalLow,
+      typicalHigh: trendPay.typicalHigh,
+      rateSamples: trendPay.rateSamples,
+      platforms: trendPay.platforms,
+    })
+    .from(trendPay)
+    .where(eq(trendPay.snapshotId, latest.id))
+    .orderBy(desc(trendPay.median), asc(trendPay.label));
+  return { dataDate: latest.dataDate, rows };
+}
+
 /**
  * Everything the trends overview shows, read from published snapshots only (TRD-02).
  * Returns null until the first roles file has been published.
@@ -97,40 +134,6 @@ export async function getTrendsOverview(db: Db, options: { weeks: number }): Pro
   if (!totals) return null;
   const previous = previousRoles ? await totalsFor(db, previousRoles.id) : null;
 
-  const workTypes = await db
-    .select({ slug: trendWorkTypes.slug, label: trendWorkTypes.label, openCount: trendWorkTypes.openCount })
-    .from(trendWorkTypes)
-    .where(eq(trendWorkTypes.snapshotId, latestRoles.id))
-    .orderBy(desc(trendWorkTypes.openCount), asc(trendWorkTypes.label));
-
-  const platforms = await db
-    .select({ slug: trendPlatforms.slug, name: trendPlatforms.name, openCount: trendPlatforms.openCount })
-    .from(trendPlatforms)
-    .where(eq(trendPlatforms.snapshotId, latestRoles.id))
-    .orderBy(desc(trendPlatforms.openCount), asc(trendPlatforms.name));
-
-  const [latestPay] = await latestPublished(db, "pay", 1);
-  const pay = latestPay
-    ? {
-        dataDate: latestPay.dataDate,
-        rows: await db
-          .select({
-            slug: trendPay.slug,
-            label: trendPay.label,
-            currency: trendPay.currency,
-            unit: trendPay.unit,
-            median: trendPay.median,
-            typicalLow: trendPay.typicalLow,
-            typicalHigh: trendPay.typicalHigh,
-            rateSamples: trendPay.rateSamples,
-            platforms: trendPay.platforms,
-          })
-          .from(trendPay)
-          .where(eq(trendPay.snapshotId, latestPay.id))
-          .orderBy(desc(trendPay.median), asc(trendPay.label)),
-      }
-    : null;
-
   const recentWeeks = await db
     .select({ weekStart: trendWeekly.weekStart, newRoles: trendWeekly.newRoles })
     .from(trendWeekly)
@@ -138,8 +141,15 @@ export async function getTrendsOverview(db: Db, options: { weeks: number }): Pro
     .limit(options.weeks);
 
   return {
-    roles: { dataDate: latestRoles.dataDate, fetchedAt: latestRoles.fetchedAt, totals, previous, workTypes, platforms },
-    pay,
+    roles: {
+      dataDate: latestRoles.dataDate,
+      fetchedAt: latestRoles.fetchedAt,
+      totals,
+      previous,
+      workTypes: await workTypesFor(db, latestRoles.id),
+      platforms: await platformsFor(db, latestRoles.id),
+    },
+    pay: await latestPay(db),
     weekly: recentWeeks.reverse(),
   };
 }
@@ -161,20 +171,12 @@ export interface PlatformRaceData {
   platforms: RacePlatform[];
 }
 
-/**
- * Everything the platform race page shows (TRD-11), from published snapshots only.
- * Returns null until the first roles file has been published.
- */
-export async function getPlatformRace(db: Db): Promise<PlatformRaceData | null> {
-  const [latestRoles] = await latestPublished(db, "roles", 1);
-  if (!latestRoles) return null;
-
-  const platforms = await db
-    .select({ slug: trendPlatforms.slug, name: trendPlatforms.name, openCount: trendPlatforms.openCount })
-    .from(trendPlatforms)
-    .where(eq(trendPlatforms.snapshotId, latestRoles.id))
-    .orderBy(desc(trendPlatforms.openCount), asc(trendPlatforms.name));
-
+/** The platforms of one roles snapshot joined to the newest published job-search counts (TRD-11). */
+async function raceFor(
+  db: Db,
+  roles: { id: number; dataDate: string; fetchedAt: Date },
+  platforms: PlatformCount[],
+): Promise<PlatformRaceData> {
   const [latestStats] = await latestPublished(db, "platform_stats", 1);
   const statsRows = latestStats
     ? await db
@@ -193,7 +195,7 @@ export async function getPlatformRace(db: Db): Promise<PlatformRaceData | null> 
   const first = statsRows[0];
 
   return {
-    roles: { dataDate: latestRoles.dataDate, fetchedAt: latestRoles.fetchedAt },
+    roles: { dataDate: roles.dataDate, fetchedAt: roles.fetchedAt },
     stats:
       latestStats && first
         ? {
@@ -213,4 +215,47 @@ export async function getPlatformRace(db: Db): Promise<PlatformRaceData | null> 
       };
     }),
   };
+}
+
+/**
+ * Everything the platform race page shows (TRD-11), from published snapshots only.
+ * Returns null until the first roles file has been published.
+ */
+export async function getPlatformRace(db: Db): Promise<PlatformRaceData | null> {
+  const [latestRoles] = await latestPublished(db, "roles", 1);
+  if (!latestRoles) return null;
+  return raceFor(db, latestRoles, await platformsFor(db, latestRoles.id));
+}
+
+export interface PlatformGuideData {
+  /** Newest published roles file: headline figures and open roles by sector. */
+  roles: { dataDate: string; fetchedAt: Date; totals: TotalsFigures; workTypes: WorkTypeCount[] };
+  /** Newest published pay file, if any. */
+  pay: TrendsOverview["pay"];
+  /** The platform race, built on the same roles file. */
+  race: PlatformRaceData;
+}
+
+/**
+ * Everything the Platform guide page shows, read once inside one read-only transaction, so every
+ * section describes the same published files even while a daily update is being stored.
+ * Returns null until the first roles file has been published.
+ */
+export async function getPlatformGuide(db: Db): Promise<PlatformGuideData | null> {
+  return db.transaction(
+    async (tx) => {
+      const [latestRoles] = await latestPublished(tx, "roles", 1);
+      if (!latestRoles) return null;
+      const totals = await totalsFor(tx, latestRoles.id);
+      if (!totals) return null;
+      const workTypes = await workTypesFor(tx, latestRoles.id);
+      const platforms = await platformsFor(tx, latestRoles.id);
+      return {
+        roles: { dataDate: latestRoles.dataDate, fetchedAt: latestRoles.fetchedAt, totals, workTypes },
+        pay: await latestPay(tx),
+        race: await raceFor(tx, latestRoles, platforms),
+      };
+    },
+    { isolationLevel: "repeatable read", accessMode: "read only" },
+  );
 }

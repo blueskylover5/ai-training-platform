@@ -137,3 +137,25 @@ export const trendWeekly = pgTable("trend_weekly", {
   asOfDate: date("as_of_date").notNull(),
   snapshotId: snapshotRef(),
 });
+
+/**
+ * Messages sent with the contact form on the Platforms page (CON-01 to CON-06, ADR 0005).
+ * Never shown on a public page. The sender's network address is kept only as a salted hash,
+ * for the per-hour limit (CON-04).
+ */
+export const contactMessages = pgTable(
+  "contact_messages",
+  {
+    id: serial("id").primaryKey(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    name: text("name"),
+    email: text("email").notNull(),
+    topic: text("topic").notNull(),
+    message: text("message").notNull(),
+    /** When the sender ticked the platform-rules confirmation (CON-02). */
+    policyConfirmedAt: timestamp("policy_confirmed_at", { withTimezone: true }).notNull(),
+    addressHash: text("address_hash").notNull(),
+    status: text("status", { enum: ["new", "answered"] }).notNull().default("new"),
+  },
+  (t) => [index("contact_messages_address_created_idx").on(t.addressHash, t.createdAt)],
+);

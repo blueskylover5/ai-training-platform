@@ -1,3 +1,4 @@
+import { bigPayOdds } from "./insights";
 import { formatCount, formatDataDate, formatShortDate } from "./present";
 import type { PlatformRaceData } from "./queries";
 
@@ -173,10 +174,7 @@ export function buildRaces(data: PlatformRaceData, options: RaceOptions): RaceVi
       detail: `${percent(p.stats!.bigPayRoles, p.stats!.openRoles)}% of its ${formatCount(p.stats!.openRoles)} open roles`,
     })),
   );
-  const bestOdds = counted
-    .filter((p) => p.stats!.openRoles >= options.minOpenRolesForShare)
-    .map((p) => ({ name: p.name, share: percent(p.stats!.bigPayRoles, p.stats!.openRoles), open: p.stats!.openRoles }))
-    .sort((a, b) => b.share - a.share || b.open - a.open)[0];
+  const [bestOdds] = bigPayOdds(data.platforms, options.minOpenRolesForShare);
   const openLeader = open[0];
   const openLeaderHere = openLeader ? bigPay.find((e) => e.slug === openLeader.slug) : undefined;
   const bigPayRace: RaceView = {
@@ -191,8 +189,8 @@ export function buildRaces(data: PlatformRaceData, options: RaceOptions): RaceVi
     unavailableNote: null,
     commentary: [
       leaderLine(bigPay, `roles at ${threshold}+`, (name, value) => `${name} takes the money lap with ${value} roles at ${threshold}+`),
-      bestOdds && bestOdds.share > 0
-        ? `Best odds: ${bestOdds.share}% of ${bestOdds.name}'s ${formatCount(bestOdds.open)} open roles advertise ${threshold}+.`
+      bestOdds
+        ? `Best odds: ${bestOdds.sharePercent}% of ${bestOdds.name}'s ${formatCount(bestOdds.openRoles)} open roles advertise ${threshold}+.`
         : null,
       openLeader && openLeaderHere && openLeaderHere.rank > 3
         ? openLeaderHere.value === 0

@@ -14,7 +14,7 @@ function Tip({ children, align = "center" }: { children: ReactNode; align?: "cen
   return (
     <span
       aria-hidden="true"
-      className={`pointer-events-none absolute bottom-full z-10 mb-1.5 hidden whitespace-nowrap rounded-md bg-ink px-2.5 py-1.5 text-xs leading-4 text-page shadow-lg group-hover:block ${position}`}
+      className={`pointer-events-none absolute bottom-full z-10 mb-2 hidden w-max max-w-[min(28rem,calc(100vw-2.5rem))] rounded-lg bg-ink px-3 py-2 text-sm leading-5 text-page shadow-lg group-hover:block ${position}`}
     >
       {children}
     </span>
@@ -30,26 +30,42 @@ export interface BarItem {
 }
 
 /** Ranked horizontal bars with the value at each bar's tip. */
-export function BarList({ items, total, unit }: { items: BarItem[]; total: number; unit: string }) {
+export function BarList({
+  items,
+  total,
+  unit,
+  formatValue = formatCount,
+  tip,
+}: {
+  items: BarItem[];
+  total: number;
+  unit: string;
+  /** How the value at each bar's tip reads; a count by default. */
+  formatValue?: (value: number) => string;
+  /** Tooltip text; by default the value and its share of `total`. */
+  tip?: (item: BarItem) => ReactNode;
+}) {
   const max = Math.max(1, ...items.map((i) => i.value));
   return (
-    <ul role="list" className="flex flex-col gap-2.5 sm:gap-1.5">
+    <ul role="list" className="flex flex-col gap-4 sm:gap-2">
       {items.map((item) => (
         <li
           key={item.key}
-          className="group relative grid grid-cols-1 items-center gap-x-4 gap-y-1 rounded-md sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] sm:px-2 sm:py-1 sm:hover:bg-grid/50"
+          className="group relative grid grid-cols-1 items-center gap-x-5 gap-y-1.5 rounded-lg sm:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] sm:px-3 sm:py-1.5 sm:hover:bg-tint"
         >
-          <span className="truncate text-sm text-ink" title={item.label}>
+          <span className="text-base text-ink sm:truncate" title={item.label}>
             {item.label}
           </span>
-          <span className="relative flex items-center gap-2">
+          <span className="relative flex items-center gap-3">
             <span
-              className="h-4 min-w-0.5 rounded-r-[4px] bg-series"
-              style={{ width: `calc((100% - 3.5rem) * ${item.value / max})` }}
+              className="h-5 min-w-0.5 rounded-r-[4px] bg-series"
+              style={{ width: `calc((100% - 4rem) * ${item.value / max})` }}
             />
-            <span className="text-sm tabular-nums text-ink">{formatCount(item.value)}</span>
+            <span className="text-base font-medium tabular-nums text-ink">{formatValue(item.value)}</span>
             <Tip align="end">
-              {item.label}: {formatCount(item.value)} {unit} ({Math.round((item.value / total) * 100)}% of {formatCount(total)})
+              {tip
+                ? tip(item)
+                : `${item.label}: ${formatCount(item.value)} ${unit} (${Math.round((item.value / total) * 100)}% of ${formatCount(total)})`}
             </Tip>
           </span>
         </li>
@@ -62,13 +78,13 @@ export function BarList({ items, total, unit }: { items: BarItem[]; total: numbe
 export function WeeklyColumns({ weeks }: { weeks: Array<{ weekStart: string; newRoles: number }> }) {
   const scale = niceScale(Math.max(...weeks.map((w) => w.newRoles)), 3);
   const last = weeks.length - 1;
-  // On narrow screens, label every third week counting back from the latest.
+  // Below desktop width, label every third week counting back from the latest, so labels never overlap.
   const labelOnMobile = (i: number) => (last - i) % 3 === 0;
 
   return (
     <div className="flex gap-2" role="img" aria-label={`New roles per week from the week of ${formatShortDate(weeks[0].weekStart)} to the week of ${formatShortDate(weeks[last].weekStart)}; latest week ${formatCount(weeks[last].newRoles)}.`}>
       {/* y-axis */}
-      <div aria-hidden="true" className="relative h-56 w-9 shrink-0 text-right text-xs tabular-nums text-ink-3">
+      <div aria-hidden="true" className="relative h-64 w-10 shrink-0 text-right text-sm tabular-nums text-ink-3">
         {scale.ticks.map((t) => (
           <span key={t} className="absolute right-0 translate-y-1/2" style={{ bottom: percent(t, scale.max) }}>
             {formatCount(t)}
@@ -76,7 +92,7 @@ export function WeeklyColumns({ weeks }: { weeks: Array<{ weekStart: string; new
         ))}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="relative h-56">
+        <div className="relative h-64">
           {scale.ticks.map((t) => (
             <span
               key={t}
@@ -88,9 +104,9 @@ export function WeeklyColumns({ weeks }: { weeks: Array<{ weekStart: string; new
           <ol className="absolute inset-0 flex items-end">
             {weeks.map((w, i) => (
               <li key={w.weekStart} className="group relative flex h-full flex-1 items-end justify-center">
-                <span className="relative flex w-full max-w-6 flex-col items-center" style={{ height: percent(w.newRoles, scale.max) }}>
+                <span className="relative flex w-full max-w-8 flex-col items-center" style={{ height: percent(w.newRoles, scale.max) }}>
                   {i === last && (
-                    <span className="absolute bottom-full mb-1 text-xs font-medium tabular-nums text-ink">{formatCount(w.newRoles)}</span>
+                    <span className="absolute bottom-full mb-1 text-sm font-semibold tabular-nums text-ink">{formatCount(w.newRoles)}</span>
                   )}
                   <span className="h-full w-[calc(100%-4px)] rounded-t-[4px] bg-series group-hover:opacity-80" />
                 </span>
@@ -101,10 +117,17 @@ export function WeeklyColumns({ weeks }: { weeks: Array<{ weekStart: string; new
             ))}
           </ol>
         </div>
-        <ol aria-hidden="true" className="mt-2 flex text-xs text-ink-3">
+        {/* Each label is centred under its column and may run past it, so narrow columns never widen the page. */}
+        <ol aria-hidden="true" className="mt-3 flex text-sm text-ink-3">
           {weeks.map((w, i) => (
-            <li key={w.weekStart} className={`flex-1 whitespace-nowrap text-center ${labelOnMobile(i) ? "" : "invisible sm:visible"}`}>
-              {formatShortDate(w.weekStart)}
+            <li key={w.weekStart} className={`relative h-5 min-w-0 flex-1 ${labelOnMobile(i) ? "" : "invisible lg:visible"}`}>
+              <span
+                className={`absolute top-0 whitespace-nowrap ${
+                  i === last ? "right-0" : i === 0 ? "left-0" : "left-1/2 -translate-x-1/2"
+                }`}
+              >
+                {formatShortDate(w.weekStart)}
+              </span>
             </li>
           ))}
         </ol>
@@ -132,7 +155,7 @@ export function PayRanges({ items, hiddenNote }: { items: PayRangeItem[]; hidden
   const currency = shown[0]?.currency ?? "USD";
   const scale = niceScale(Math.max(1, ...shown.map((i) => i.typicalHigh)), 5);
   const grid =
-    "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_7.5rem]";
+    "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-5 gap-y-1.5 sm:grid-cols-[minmax(0,16rem)_minmax(0,1fr)_9rem]";
 
   const gridlines = scale.ticks.map((t) => (
     <span
@@ -145,37 +168,37 @@ export function PayRanges({ items, hiddenNote }: { items: PayRangeItem[]; hidden
 
   return (
     <div>
-      <div aria-hidden="true" className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-ink-2">
-        <span className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-series" /> Median
+      <div aria-hidden="true" className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-2">
+        <span className="flex items-center gap-2">
+          <span className="size-3 rounded-full bg-series" /> Median
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="h-2 w-6 rounded-full bg-series-soft" /> Typical range
+        <span className="flex items-center gap-2">
+          <span className="h-2.5 w-7 rounded-full bg-series-soft" /> Typical range
         </span>
       </div>
-      <ul role="list" className="flex flex-col gap-3 sm:gap-1">
+      <ul role="list" className="flex flex-col gap-5 sm:gap-2">
         {items.map((item) => (
-          <li key={item.key} className={`${grid} group relative rounded-md sm:px-2 sm:py-1 sm:hover:bg-grid/50`}>
-            <span className="truncate text-sm text-ink" title={item.label}>
+          <li key={item.key} className={`${grid} group relative rounded-lg sm:px-3 sm:py-1.5 sm:hover:bg-tint`}>
+            <span className="text-base text-ink sm:truncate" title={item.label}>
               {item.label}
             </span>
             {item.visible ? (
               <>
-                <span className="text-right text-sm tabular-nums text-ink sm:order-last">
+                <span className="text-right text-base tabular-nums text-ink sm:order-last">
                   {formatMoney(item.median, item.currency)}
                   <span className="text-ink-2">
                     {" "}
                     · {formatMoney(item.typicalLow, item.currency)}–{formatMoney(item.typicalHigh, item.currency)}
                   </span>
                 </span>
-                <span className="relative col-span-2 h-5 sm:col-span-1">
+                <span className="relative col-span-2 h-6 sm:col-span-1">
                   {gridlines}
                   <span
-                    className="absolute top-1/2 h-2 -translate-y-1/2 rounded-full bg-series-soft"
+                    className="absolute top-1/2 h-2.5 -translate-y-1/2 rounded-full bg-series-soft"
                     style={{ left: percent(item.typicalLow, scale.max), width: percent(item.typicalHigh - item.typicalLow, scale.max) }}
                   />
                   <span
-                    className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-series ring-2 ring-surface"
+                    className="absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-series ring-2 ring-surface"
                     style={{ left: percent(item.median, scale.max) }}
                   />
                   <Tip>
@@ -186,15 +209,15 @@ export function PayRanges({ items, hiddenNote }: { items: PayRangeItem[]; hidden
                 </span>
               </>
             ) : (
-              <span className="col-span-2 text-sm text-ink-2 sm:col-span-2">{hiddenNote}</span>
+              <span className="col-span-2 text-base text-ink-2 sm:col-span-2">{hiddenNote}</span>
             )}
           </li>
         ))}
       </ul>
       {/* x-axis, aligned with the bar column */}
-      <div aria-hidden="true" className={`${grid} mt-1 sm:px-2`}>
+      <div aria-hidden="true" className={`${grid} mt-2 sm:px-3`}>
         <span className="hidden sm:block" />
-        <span className="relative col-span-2 h-4 text-xs tabular-nums text-ink-3 sm:col-span-1">
+        <span className="relative col-span-2 h-5 text-sm tabular-nums text-ink-3 sm:col-span-1">
           {scale.ticks.map((t, i) => (
             <span
               key={t}

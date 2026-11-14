@@ -1,0 +1,119 @@
+import { contactConfig } from "@/config";
+import { pageWidth } from "../_components/page-width";
+import { ContactForm, type ContactFormSettings } from "./contact-form";
+
+const helpTopics = [
+  "Choosing platforms that fit your skills",
+  "Getting accepted and through onboarding",
+  "Finding steady projects and more work",
+  "Pay, payouts and getting paid",
+  "Making your expertise count: law, medicine, coding, languages and more",
+];
+
+/** Section 4 of the Platforms page: who to contact when AI training isn't working out (CON-01 to CON-06). */
+export function ContactSection() {
+  const settings: ContactFormSettings = {
+    topics: contactConfig.topics,
+    nameMaxChars: contactConfig.nameMaxChars,
+    emailMaxChars: contactConfig.emailMaxChars,
+    messageMinChars: contactConfig.messageMinChars,
+    messageMaxChars: contactConfig.messageMaxChars,
+    honeypotField: contactConfig.honeypotField,
+  };
+  // CON-05: a channel appears only once its link is set in the configuration.
+  const channels = [
+    { key: "telegram", href: contactConfig.telegramUrl, label: "Message us on Telegram", icon: <PaperPlane /> },
+    { key: "discord", href: contactConfig.discordUrl, label: "Join us on Discord", icon: <ChatBubbles /> },
+  ].flatMap((c) => (c.href ? [{ ...c, href: c.href }] : []));
+
+  return (
+    <section id="contact" aria-labelledby="contact-heading" className="scroll-mt-4 bg-tint py-16 sm:py-24">
+      <div className={`${pageWidth} grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16`}>
+        <div>
+          <p className="flex items-center gap-3 text-sm font-semibold tracking-widest text-ink-2 uppercase">
+            <span
+              aria-hidden="true"
+              className="flex size-8 items-center justify-center rounded-full bg-ink text-sm tracking-normal text-page"
+            >
+              4
+            </span>
+            Contact
+          </p>
+          <h2 id="contact-heading" className="mt-5 text-3xl leading-tight font-bold tracking-tight text-balance text-ink sm:text-4xl lg:text-[2.75rem]">
+            Struggling with AI training? Talk to us.
+          </h2>
+          <p className="mt-5 text-lg leading-8 text-ink-2 sm:text-xl sm:leading-9">
+            If AI training feels hard, or something in your field is stopping you from earning, reach out. Tell us where
+            you&apos;re stuck and we&apos;ll work through it with you until you have a complete solution.
+          </p>
+
+          <h3 className="mt-10 text-lg font-semibold text-ink">We can help with</h3>
+          <ul role="list" className="mt-4 flex flex-col gap-3">
+            {helpTopics.map((topic) => (
+              <li key={topic} className="flex gap-3 text-base leading-7 text-ink sm:text-lg">
+                <span aria-hidden="true" className="mt-0.5 font-bold text-good">
+                  ✓
+                </span>
+                {topic}
+              </li>
+            ))}
+          </ul>
+
+          {channels.length > 0 && (
+            <div className="mt-10">
+              <h3 className="text-lg font-semibold text-ink">Prefer to chat?</h3>
+              <ul role="list" className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                {channels.map((c) => (
+                  <li key={c.key}>
+                    <a
+                      href={c.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-line-strong bg-surface px-6 py-3.5 text-base font-semibold text-ink hover:border-ink hover:no-underline sm:w-auto"
+                    >
+                      {c.icon}
+                      {c.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="mt-10 rounded-2xl border border-line bg-surface p-6">
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-ink">
+              <span aria-hidden="true">🔒</span> Your account stays yours
+            </h3>
+            <p className="mt-2 text-base leading-7 text-ink-2">
+              We never ask for your platform password or login, and we never do assessments or tasks for you. Please
+              don&apos;t send task content, test questions or anything your platform keeps confidential.
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-line bg-surface p-6 shadow-[0_8px_30px_rgba(11,11,11,0.06)] sm:p-10">
+          <h3 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Send us a message</h3>
+          <p className="mt-2 mb-8 text-base leading-7 text-ink-2">We read every message and reply by email.</p>
+          <ContactForm settings={settings} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PaperPlane() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+      <path d="M21.5 3.5 2.5 11l7 2.5m12-10-4 17-8-7m12-10-12 10m0 0v6l3.5-3.5" />
+    </svg>
+  );
+}
+
+function ChatBubbles() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+      <path d="M4 5h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
+      <path d="M17 9h3a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-1v3l-4-3h-3a2 2 0 0 1-2-1.5" />
+    </svg>
+  );
+}
