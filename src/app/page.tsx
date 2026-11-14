@@ -221,8 +221,7 @@ function ContactTeaser() {
           Struggling with AI training?
         </h2>
         <p className="mt-3 text-lg leading-8 text-ink-2">
-          Tell us where you&apos;re stuck and we&apos;ll work through it with you. We never ask for your platform login,
-          and we never do assessments or tasks for you.
+          Tell us where you&apos;re stuck and we&apos;ll work through it with you.
         </p>
       </div>
       <Link
