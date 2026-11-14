@@ -1,6 +1,6 @@
 # ADR 0005: A public contact form before member sign-in
 
-- **Status:** Accepted, amended 2026-11-14 (see the amendment at the end)
+- **Status:** Accepted, amended 2026-11-14 and 2026-11-15 (see the amendments at the end)
 - **Date:** 2026-11-13
 - **Design reference:** system design v3.2, §6 (`CON-01` to `CON-06`)
 
@@ -32,3 +32,13 @@ The team has no Telegram or Discord channels yet (§13), so the buttons would st
 - Both values live in `src/config.ts` and are swapped for team channels as soon as those exist. `CON-05` records the exception.
 
 Consequence: visitors reach individual people rather than the team, so replies depend on those people being available, and the accounts must follow the same community rules as the rest of the section (no logins, no assessments or tasks).
+
+## Amendment (2026-11-15): a shorter contact section
+
+The owner decided to simplify the section (#7). Two points above no longer hold: the form has no topic and no rules confirmation, and the section no longer repeats the community rules.
+
+- Removed from the page: the "We can help with" list, the "Your account stays yours" box, the "Where are you stuck?" list and the rules checkbox. The form asks for an email address, a message and, optionally, a name. The hidden anti-bot field and the per-address limit stay.
+- The Server Action no longer accepts or stores a topic or a confirmation. Migration `0003` makes `topic` and `policy_confirmed_at` nullable, so messages stored before the change keep their values and new ones leave both empty. `npm run contact:list` prints a topic only when a message has one.
+- `CON-02`, `CON-06` and `AT-15` record the change.
+
+Consequences: nothing on the section asks visitors to keep task content, assessment questions or logins out of their message, so some messages may contain them. `EXP-12` and Appendix A are unchanged. Messages also arrive without a topic, so the team learns what each one is about only by reading it.

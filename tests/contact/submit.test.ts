@@ -20,9 +20,7 @@ function form(fields: Record<string, string>): FormData {
 const valid = {
   name: "  Sam  ",
   email: "sam@example.com",
-  topic: "more-work",
   message: "I passed onboarding on two platforms but have had no projects for a month.",
-  policy: "yes",
 };
 
 let handle: DbHandle;
@@ -44,7 +42,7 @@ const submit = (fields: Record<string, string>, now = NOW, address = ADDRESS) =>
   submitContactMessage(handle.db, form(fields), { address, now, hashSecret: SECRET });
 
 describe("submitContactMessage (CON-01 to CON-04)", () => {
-  it("stores a valid message with the rules confirmation and a hashed address, never the address", async () => {
+  it("stores a valid message with a hashed address, never the address", async () => {
     const result = await submit(valid);
 
     expect(result).toEqual({ status: "sent", name: "Sam", email: "sam@example.com" });
@@ -52,13 +50,29 @@ describe("submitContactMessage (CON-01 to CON-04)", () => {
     expect(row).toMatchObject({
       name: "Sam",
       email: "sam@example.com",
-      topic: "more-work",
       message: valid.message,
       status: "new",
-      policyConfirmedAt: NOW,
+      createdAt: NOW,
       addressHash: hashAddress(ADDRESS, SECRET),
     });
     expect(JSON.stringify(row)).not.toContain(ADDRESS);
+  });
+
+  it("accepts just an email and a message, with no topic or confirmation (CON-02, #7)", async () => {
+    const result = await submit({ email: valid.email, message: valid.message });
+
+    expect(result).toEqual({ status: "sent", name: null, email: "sam@example.com" });
+    const [row] = await stored();
+    expect(row).toMatchObject({ name: null, email: "sam@example.com", message: valid.message });
+    expect(row.topic).toBeNull();
+    expect(row.policyConfirmedAt).toBeNull();
+  });
+
+  it("ignores a topic or confirmation sent by a page from before the change", async () => {
+    expect((await submit({ ...valid, topic: "more-work", policy: "yes" })).status).toBe("sent");
+    const [row] = await stored();
+    expect(row.topic).toBeNull();
+    expect(row.policyConfirmedAt).toBeNull();
   });
 
   it("stores an empty name as no name", async () => {
@@ -67,22 +81,21 @@ describe("submitContactMessage (CON-01 to CON-04)", () => {
     expect(row.name).toBeNull();
   });
 
-  it("refuses a message without the platform-rules confirmation (CON-02, AT-15)", async () => {
-    const result = await submit({ ...valid, policy: "" });
-
-    expect(result.status).toBe("invalid");
-    expect(result.status === "invalid" && Object.keys(result.errors)).toEqual(["policy"]);
-    expect(await stored()).toEqual([]);
-  });
-
   it("explains each wrong field and keeps what was typed (AT-15)", async () => {
-    const result = await submit({ ...valid, email: "not-an-email", topic: "hack-my-account", message: "help" });
+    const result = await submit({ ...valid, email: "not-an-email", message: "help" });
 
     expect(result.status).toBe("invalid");
     if (result.status !== "invalid") return;
-    expect(Object.keys(result.errors).sort()).toEqual(["email", "message", "topic"]);
+    expect(Object.keys(result.errors).sort()).toEqual(["email", "message"]);
     expect(result.errors.message).toContain(String(contactConfig.messageMinChars));
-    expect(result.values).toMatchObject({ email: "not-an-email", message: "help", policy: true });
+    expect(result.values).toEqual({ name: "Sam", email: "not-an-email", message: "help" });
+    expect(await stored()).toEqual([]);
+  });
+
+  it("asks for the email address when it is missing (AT-15)", async () => {
+    const result = await submit({ message: valid.message });
+
+    expect(result.status === "invalid" && Object.keys(result.errors)).toEqual(["email"]);
     expect(await stored()).toEqual([]);
   });
 

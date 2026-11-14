@@ -4,18 +4,9 @@ import { pageWidth } from "../_components/page-width";
 import { ContactForm, type ContactFormSettings } from "./contact-form";
 import { DiscordHandle } from "./discord-handle";
 
-const helpTopics = [
-  "Choosing platforms that fit your skills",
-  "Getting accepted and through onboarding",
-  "Finding steady projects and more work",
-  "Pay, payouts and getting paid",
-  "Making your expertise count: law, medicine, coding, languages and more",
-];
-
 /** Section 4 of the Platforms page: who to contact when AI training isn't working out (CON-01 to CON-06). */
 export function ContactSection() {
   const settings: ContactFormSettings = {
-    topics: contactConfig.topics,
     nameMaxChars: contactConfig.nameMaxChars,
     emailMaxChars: contactConfig.emailMaxChars,
     messageMinChars: contactConfig.messageMinChars,
@@ -46,18 +37,6 @@ export function ContactSection() {
             you&apos;re stuck and we&apos;ll work through it with you until you have a complete solution.
           </p>
 
-          <h3 className="mt-10 text-lg font-semibold text-ink">We can help with</h3>
-          <ul role="list" className="mt-4 flex flex-col gap-3">
-            {helpTopics.map((topic) => (
-              <li key={topic} className="flex gap-3 text-base leading-7 text-ink sm:text-lg">
-                <span aria-hidden="true" className="mt-0.5 font-bold text-good">
-                  ✓
-                </span>
-                {topic}
-              </li>
-            ))}
-          </ul>
-
           {(telegram || discord) && (
             <div className="mt-10">
               <h3 className="text-lg font-semibold text-ink">Prefer to chat?</h3>
@@ -83,16 +62,6 @@ export function ContactSection() {
               </ul>
             </div>
           )}
-
-          <div className="mt-10 rounded-2xl border border-line bg-surface p-6">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-ink">
-              <span aria-hidden="true">🔒</span> Your account stays yours
-            </h3>
-            <p className="mt-2 text-base leading-7 text-ink-2">
-              We never ask for your platform password or login, and we never do assessments or tasks for you. Please
-              don&apos;t send task content, test questions or anything your platform keeps confidential.
-            </p>
-          </div>
         </div>
 
         <div className="rounded-3xl border border-line bg-surface p-6 shadow-[0_8px_30px_rgba(11,11,11,0.06)] sm:p-10">

@@ -11,7 +11,6 @@ const input =
 
 /** The settings the form needs, passed in so server-only configuration never reaches the browser. */
 export interface ContactFormSettings {
-  topics: ReadonlyArray<{ value: string; label: string }>;
   nameMaxChars: number;
   emailMaxChars: number;
   messageMinChars: number;
@@ -32,8 +31,9 @@ function ContactFormRound({ settings, onAnother }: { settings: ContactFormSettin
   const values = state.status === "invalid" || state.status === "limited" || state.status === "error" ? state.values : null;
   const errors = state.status === "invalid" ? state.errors : {};
 
-  // After each answer the form starts again from what was typed: a new key remounts it, because
-  // browsers reset a <select> to its first default otherwise. The counter follows the kept text.
+  // After each answer React resets the form to its default values, which are what was typed, so
+  // the fields keep their text. The counter follows the kept text, and a new key on the notice
+  // makes screen readers announce it again even when the answer is the same as last time.
   const [length, setLength] = useState(0);
   const [attempt, setAttempt] = useState(0);
   const [seen, setSeen] = useState(state);
@@ -76,19 +76,19 @@ function ContactFormRound({ settings, onAnother }: { settings: ContactFormSettin
     [errors[field] ? `contact-${field}-error` : null, extra].filter(Boolean).join(" ") || undefined;
 
   return (
-    <form key={attempt} action={formAction} className="relative flex flex-col gap-6">
+    <form action={formAction} className="relative flex flex-col gap-6">
       {state.status === "limited" && (
-        <p role="alert" className="rounded-xl border border-warning/60 bg-warning-wash px-5 py-4 text-base leading-7 text-ink">
+        <p key={attempt} role="alert" className="rounded-xl border border-warning/60 bg-warning-wash px-5 py-4 text-base leading-7 text-ink">
           You&apos;ve already sent a few messages in the last hour. Please try again later.
         </p>
       )}
       {state.status === "error" && (
-        <p role="alert" className="rounded-xl border border-error/40 bg-error-wash px-5 py-4 text-base leading-7 text-ink">
+        <p key={attempt} role="alert" className="rounded-xl border border-error/40 bg-error-wash px-5 py-4 text-base leading-7 text-ink">
           Sorry, something went wrong on our side and your message wasn&apos;t sent. Please try again in a few minutes.
         </p>
       )}
       {state.status === "invalid" && (
-        <p role="alert" className="rounded-xl border border-error/40 bg-error-wash px-5 py-4 text-base leading-7 text-ink">
+        <p key={attempt} role="alert" className="rounded-xl border border-error/40 bg-error-wash px-5 py-4 text-base leading-7 text-ink">
           Please check the {Object.keys(errors).length === 1 ? "field" : "fields"} marked below.
         </p>
       )}
@@ -124,24 +124,6 @@ function ContactFormRound({ settings, onAnother }: { settings: ContactFormSettin
         </Field>
       </div>
 
-      <Field id="contact-topic" label="Where are you stuck?" error={errors.topic}>
-        <select
-          id="contact-topic"
-          name="topic"
-          required
-          defaultValue={values?.topic ?? settings.topics[0].value}
-          aria-invalid={errors.topic ? true : undefined}
-          aria-describedby={describedBy("topic")}
-          className={`${input} appearance-none bg-[url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2020%2020'%20fill='%2352514e'%3E%3Cpath%20d='M5.5%207.5%2010%2012l4.5-4.5'%20stroke='%2352514e'%20stroke-width='1.8'%20fill='none'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E")] bg-[length:1.25rem] bg-[right_1rem_center] bg-no-repeat pr-12`}
-        >
-          {settings.topics.map((t) => (
-            <option key={t.value} value={t.value}>
-              {t.label}
-            </option>
-          ))}
-        </select>
-      </Field>
-
       <Field id="contact-message" label="Tell us what's happening" error={errors.message}>
         <textarea
           id="contact-message"
@@ -161,26 +143,6 @@ function ContactFormRound({ settings, onAnother }: { settings: ContactFormSettin
           {length} / {settings.messageMaxChars}
         </p>
       </Field>
-
-      <div>
-        <label className="flex cursor-pointer items-start gap-3 text-base leading-7 text-ink">
-          <input
-            type="checkbox"
-            name="policy"
-            value="yes"
-            required
-            defaultChecked={values?.policy}
-            aria-invalid={errors.policy ? true : undefined}
-            aria-describedby={describedBy("policy")}
-            className="mt-1.5 size-5 shrink-0 accent-ink"
-          />
-          <span>
-            I won&apos;t share task content, assessment questions or confidential project material, and I follow my
-            platform&apos;s rules.
-          </span>
-        </label>
-        {errors.policy && <FieldError id="contact-policy-error">{errors.policy}</FieldError>}
-      </div>
 
       {/* CON-04: left empty by people, who never see it; bots tend to fill it in. Its name and label
           match no profile field, so browsers and password managers have nothing to autofill. */}
