@@ -25,6 +25,7 @@ Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, f
 
 - The **Platforms** page is now a four-part guide: platform status (the platform race), projects by sector, pay, and contact. The menu reads "Job market", "Platform guide" and "Contact us".
 - Added a **general contact section** that anyone can use without signing in: an email form, plus Telegram and Discord links (`CON-01` to `CON-06`, §6). See [ADR 0005](adr/0005-public-contact-form.md).
+- 14 November 2026: the Telegram and Discord buttons use two personal accounts until the team has its own channels, as an exception to `SEC-03` approved by the owner (`CON-05`, #3).
 - The site is light only (black text on a white page) with a larger, roomier layout.
 
 ### What changed in v3.1 (12 November 2026)
@@ -272,7 +273,7 @@ Until expert matching launches, the Platforms page has a contact section for any
 | `CON-02` | The form asks for an email address, a topic from a fixed list, a message (20 to 1,000 characters) and, optionally, a name. The sender MUST tick the same confirmation as `EXP-02`. The server checks every field again. |
 | `CON-03` | Messages are stored on the server only and never shown on any public page. Until an email provider is chosen (§13), the team reads them with `npm run contact:list`, which neutralises control characters in visitor text before printing it. |
 | `CON-04` | At most 3 messages per network address per hour, and a hidden field turns bots away (`SEC-04`). The address is the one the hosting proxy recorded (a setting that must match the host), never one the visitor sends, and it is stored only as a hash mixed with a server secret. In production the server refuses to start without that secret (at least 32 characters). The count and the insert happen under a lock, so simultaneous messages cannot exceed the limit. |
-| `CON-05` | The Telegram and Discord buttons appear only once their links are set in configuration. They are team or community channels, never anyone's personal account (`SEC-03`). |
+| `CON-05` | The Telegram and Discord buttons appear only once they are set in configuration. They are team or community channels, never anyone's personal account (`SEC-03`). **Exception (14 November 2026, #3):** until the team has its own channels, the owner approved two personal accounts: Telegram `@happyman01110` and Discord `sina2949`. Discord has no link that opens a chat from a username, so the section shows the username with a copy button, and links it to the profile once a numeric user ID is set. Both are swapped for team channels in `src/config.ts` when those exist. |
 | `CON-06` | The section says plainly that we never ask for platform logins or passwords and never do assessments or tasks for anyone, and asks people not to send task content (`EXP-12`, Appendix A). |
 
 ---
@@ -347,7 +348,7 @@ All endpoints return JSON with `application/problem+json` errors and are rate-li
 |---|---|
 | `SEC-01` | MFA for team experts and admins. Members sign in with a magic link or passkey. |
 | `SEC-02` | Object-level authorization on every resource. A member sees only their own requests; an expert sees only requests sent to them. |
-| `SEC-03` | Contact channels are stored server-side and released only under `EXP-04`. Experts use work channels on our domain or work accounts, never personal ones. |
+| `SEC-03` | Contact channels are stored server-side and released only under `EXP-04`. Experts use work channels on our domain or work accounts, never personal ones. (The public contact section has a temporary exception; see `CON-05`.) |
 | `SEC-04` | Rate limits per IP and per account. Bot protection on sign-up and on contact requests. |
 | `SEC-05` | Data minimization; consent records for members and experts; data export and deletion within 30 days; a privacy policy and terms of use. |
 | `SEC-06` | A strict Content Security Policy, CSRF protection, sanitized user and source text, and file-type and size limits on photos. |
@@ -400,7 +401,7 @@ Sizes are rough, for one or two developers.
 | Tell AITraining.jobs about the trend pages | Pending | Product owner | The licence already allows it; telling them keeps the partnership healthy |
 | Product name and domain | Pending | Business owner | Needed for credit links, email and the feed `source=` tag |
 | Funding model | Pending | Business owner | See §3 |
-| Contact channels and scheduling tool | Pending | Operations | Work email, work Telegram, scheduling links; the Telegram and Discord links for the contact section (`CON-05`) |
+| Contact channels and scheduling tool | Pending | Operations | Work email, work Telegram, scheduling links; team Telegram and Discord channels for the contact section, which uses two personal accounts until then (`CON-05`) |
 | Email delivery for contact messages | Pending | Operations | Needs the product domain and an email provider; until then the team reads messages with `npm run contact:list` (`CON-03`) |
 | How expert names appear (full name or first name) | Pending | Operations | Needs each expert's written consent |
 | Jobs module in the first release | Pending | Product owner | Recommended: after experts (phase 3) |
