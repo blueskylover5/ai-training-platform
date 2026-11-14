@@ -68,11 +68,17 @@ export const trendsConfig = {
  */
 export const contactConfig = {
   /**
-   * Public community links. Each button appears only once its link is set here.
-   * Team or community channels only, never anyone's personal account (SEC-03).
+   * CON-05: the "Prefer to chat?" channels. Each appears only once it is set here. They should be
+   * team or community channels (SEC-03). Exception approved by the owner on 14 November 2026 (#3):
+   * until the team has its own channels, these are personal accounts. Swap them here then.
    */
-  telegramUrl: null as string | null,
-  discordUrl: null as string | null,
+  telegramUrl: "https://t.me/happyman01110" as string | null,
+  discord: {
+    /** Discord has no link that opens a chat from a username, so the section shows it with a copy button. */
+    username: "sina2949" as string | null,
+    /** Numeric Discord user ID. Once set, the username also links to the profile (discord.com/users/<id>). */
+    userId: null as string | null,
+  },
   /** What visitors can pick in "Where are you stuck?". The first entry is the default. */
   topics: [
     { value: "choosing", label: "Choosing platforms" },

@@ -1,6 +1,6 @@
 # ADR 0005: A public contact form before member sign-in
 
-- **Status:** Accepted
+- **Status:** Accepted, amended 2026-11-14 (see the amendment at the end)
 - **Date:** 2026-11-13
 - **Design reference:** system design v3.2, §6 (`CON-01` to `CON-06`)
 
@@ -22,3 +22,13 @@ The product owner asked for a contact section on the Platforms page, so that peo
 - Messages hold personal data (an email address, sometimes a name). They fall under the privacy policy and the deletion rule in `SEC-05`, which still need writing (§13).
 - Nobody is notified of a new message until email delivery exists, so someone must check `npm run contact:list` regularly. The per-address limit is only as good as the proxy setting: `CONTACT_TRUSTED_PROXY_HOPS` must match the number of proxies in front of the app. Without a proxy (local development), Next.js fills in the header only when the visitor sent none, so the limit is easy to get around there; that is acceptable because the local site is not public.
 - The section repeats the community rules: no platform logins, no assessments or tasks done for anyone, no task content (`EXP-12`, Appendix A).
+
+## Amendment (2026-11-14): personal accounts until team channels exist
+
+The team has no Telegram or Discord channels yet (§13), so the buttons would stay hidden. The owner approved an exception to `SEC-03` in #3:
+
+- Telegram links to the personal account `@happyman01110` (`https://t.me/happyman01110`).
+- Discord shows the personal username `sina2949`. Discord has no link that opens a chat from a username, so the section shows "Message us on Discord: sina2949" with a copy button instead of "Join us on Discord". Once a numeric user ID is set (`contactConfig.discord.userId`), the username also links to `https://discord.com/users/<id>`.
+- Both values live in `src/config.ts` and are swapped for team channels as soon as those exist. `CON-05` records the exception.
+
+Consequence: visitors reach individual people rather than the team, so replies depend on those people being available, and the accounts must follow the same community rules as the rest of the section (no logins, no assessments or tasks).

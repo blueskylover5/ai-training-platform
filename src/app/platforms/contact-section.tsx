@@ -1,6 +1,8 @@
 import { contactConfig } from "@/config";
+import { contactChannels } from "@/contact/channels";
 import { pageWidth } from "../_components/page-width";
 import { ContactForm, type ContactFormSettings } from "./contact-form";
+import { DiscordHandle } from "./discord-handle";
 
 const helpTopics = [
   "Choosing platforms that fit your skills",
@@ -20,11 +22,8 @@ export function ContactSection() {
     messageMaxChars: contactConfig.messageMaxChars,
     honeypotField: contactConfig.honeypotField,
   };
-  // CON-05: a channel appears only once its link is set in the configuration.
-  const channels = [
-    { key: "telegram", href: contactConfig.telegramUrl, label: "Message us on Telegram", icon: <PaperPlane /> },
-    { key: "discord", href: contactConfig.discordUrl, label: "Join us on Discord", icon: <ChatBubbles /> },
-  ].flatMap((c) => (c.href ? [{ ...c, href: c.href }] : []));
+  // CON-05: a channel appears only once it is set in the configuration.
+  const { telegram, discord } = contactChannels(contactConfig);
 
   return (
     <section id="contact" aria-labelledby="contact-heading" className="scroll-mt-4 bg-tint py-16 sm:py-24">
@@ -59,23 +58,28 @@ export function ContactSection() {
             ))}
           </ul>
 
-          {channels.length > 0 && (
+          {(telegram || discord) && (
             <div className="mt-10">
               <h3 className="text-lg font-semibold text-ink">Prefer to chat?</h3>
               <ul role="list" className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                {channels.map((c) => (
-                  <li key={c.key}>
+                {telegram && (
+                  <li>
                     <a
-                      href={c.href}
+                      href={telegram.href}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-line-strong bg-surface px-6 py-3.5 text-base font-semibold text-ink hover:border-ink hover:no-underline sm:w-auto"
                     >
-                      {c.icon}
-                      {c.label}
+                      <PaperPlane />
+                      Message us on Telegram
                     </a>
                   </li>
-                ))}
+                )}
+                {discord && (
+                  <li>
+                    <DiscordHandle username={discord.username} profileUrl={discord.profileUrl} icon={<ChatBubbles />} />
+                  </li>
+                )}
               </ul>
             </div>
           )}
