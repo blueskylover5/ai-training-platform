@@ -10,7 +10,7 @@ import { hashAddress } from "./address";
  * per-hour limit, and store the message. Kept apart from the Server Action so tests can call it.
  */
 
-export type ContactField = "name" | "email" | "topic" | "message" | "policy";
+export type ContactField = "name" | "email" | "message";
 
 export type ContactResult =
   | { status: "idle" }
@@ -24,13 +24,8 @@ export type ContactResult =
 export interface ContactValues {
   name: string;
   email: string;
-  topic: string;
   message: string;
-  /** Whether the platform-rules box was ticked. */
-  policy: boolean;
 }
-
-const topicValues = contactConfig.topics.map((t) => t.value) as [string, ...string[]];
 
 const text = (value: FormDataEntryValue | null) => (typeof value === "string" ? value.trim() : "");
 
@@ -47,12 +42,10 @@ const contactSchema = z.object({
     .min(1, "Please enter your email address, so we can reply.")
     .max(contactConfig.emailMaxChars, "That email address is too long.")
     .pipe(z.email("Please check your email address. It should look like name@example.com.")),
-  topic: z.enum(topicValues, "Please choose where you are stuck."),
   message: z
     .string()
     .min(contactConfig.messageMinChars, `Please tell us a little more (at least ${contactConfig.messageMinChars} characters).`)
     .max(contactConfig.messageMaxChars, `Please keep your message under ${contactConfig.messageMaxChars} characters.`),
-  policy: z.literal("yes", "Please confirm you will follow your platform's rules."),
 });
 
 export interface SubmitContext {
@@ -67,9 +60,7 @@ export async function submitContactMessage(db: Db, form: FormData, context: Subm
   const values: ContactValues = {
     name: text(form.get("name")),
     email: text(form.get("email")),
-    topic: text(form.get("topic")),
     message: multiline(form.get("message")),
-    policy: text(form.get("policy")) === "yes",
   };
 
   // CON-04: a hidden field people never see. Bots that fill it are told "sent" and nothing is stored.
@@ -79,7 +70,7 @@ export async function submitContactMessage(db: Db, form: FormData, context: Subm
     return { status: "sent", name: values.name || null, email: values.email };
   }
 
-  const parsed = contactSchema.safeParse({ ...values, policy: text(form.get("policy")) });
+  const parsed = contactSchema.safeParse(values);
   if (!parsed.success) {
     const errors: Partial<Record<ContactField, string>> = {};
     for (const issue of parsed.error.issues) {
@@ -90,7 +81,7 @@ export async function submitContactMessage(db: Db, form: FormData, context: Subm
   }
 
   const now = context.now ?? new Date();
-  const { name, email, topic, message } = parsed.data;
+  const { name, email, message } = parsed.data;
   try {
     const addressHash = hashAddress(context.address, context.hashSecret);
     const hourAgo = new Date(now.getTime() - 60 * 60 * 1000);
@@ -107,9 +98,7 @@ export async function submitContactMessage(db: Db, form: FormData, context: Subm
         createdAt: now,
         name: name === "" ? null : name,
         email,
-        topic,
         message,
-        policyConfirmedAt: now,
         addressHash,
       });
       return true;

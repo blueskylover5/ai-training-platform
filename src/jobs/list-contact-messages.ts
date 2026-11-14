@@ -33,7 +33,9 @@ async function main() {
     // Everything below came from the public form, so control characters are neutralised first.
     for (const row of rows) {
       console.log(`#${row.id} · ${row.createdAt.toISOString()} · ${row.status}`);
-      console.log(`From: ${safeForTerminal(row.name ?? "(no name)")} <${safeForTerminal(row.email)}> · Topic: ${safeForTerminal(row.topic)}`);
+      // Only older messages have a topic: the form stopped asking for one (#7).
+      const topic = row.topic ? ` · Topic: ${safeForTerminal(row.topic)}` : "";
+      console.log(`From: ${safeForTerminal(row.name ?? "(no name)")} <${safeForTerminal(row.email)}>${topic}`);
       console.log(safeForTerminal(row.message));
       console.log("—".repeat(40));
     }

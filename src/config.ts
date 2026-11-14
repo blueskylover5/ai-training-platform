@@ -79,15 +79,6 @@ export const contactConfig = {
     /** Numeric Discord user ID. Once set, the username also links to the profile (discord.com/users/<id>). */
     userId: null as string | null,
   },
-  /** What visitors can pick in "Where are you stuck?". The first entry is the default. */
-  topics: [
-    { value: "choosing", label: "Choosing platforms" },
-    { value: "getting-in", label: "Getting accepted" },
-    { value: "more-work", label: "Getting more projects" },
-    { value: "pay", label: "Pay and payouts" },
-    { value: "my-field", label: "Work in my field" },
-    { value: "other", label: "Something else" },
-  ],
   nameMaxChars: 80,
   emailMaxChars: 254,
   messageMinChars: 20,

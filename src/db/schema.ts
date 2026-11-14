@@ -150,10 +150,14 @@ export const contactMessages = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     name: text("name"),
     email: text("email").notNull(),
-    topic: text("topic").notNull(),
+    /** The topic picked in the form. The form no longer asks for one (#7), so it is empty for new messages. */
+    topic: text("topic"),
     message: text("message").notNull(),
-    /** When the sender ticked the platform-rules confirmation (CON-02). */
-    policyConfirmedAt: timestamp("policy_confirmed_at", { withTimezone: true }).notNull(),
+    /**
+     * When the sender ticked the platform-rules confirmation. The form no longer has it (#7), so it is
+     * empty for new messages; older messages keep theirs.
+     */
+    policyConfirmedAt: timestamp("policy_confirmed_at", { withTimezone: true }),
     addressHash: text("address_hash").notNull(),
     status: text("status", { enum: ["new", "answered"] }).notNull().default("new"),
   },

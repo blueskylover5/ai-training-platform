@@ -26,6 +26,7 @@ Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, f
 - The **Platforms** page is now a four-part guide: platform status (the platform race), projects by sector, pay, and contact. The menu reads "Job market", "Platform guide" and "Contact us".
 - Added a **general contact section** that anyone can use without signing in: an email form, plus Telegram and Discord links (`CON-01` to `CON-06`, §6). See [ADR 0005](adr/0005-public-contact-form.md).
 - 14 November 2026: the Telegram and Discord buttons use two personal accounts until the team has its own channels, as an exception to `SEC-03` approved by the owner (`CON-05`, #3).
+- 15 November 2026: by the owner's decision, the contact section is shorter (#7). The "We can help with" list, the "Your account stays yours" box, the topic list and the rules confirmation are gone, so the form asks only for an email address, a message and, optionally, a name (`CON-02`, `CON-06`, `AT-15`).
 - The site is light only (black text on a white page) with a larger, roomier layout.
 
 ### What changed in v3.1 (12 November 2026)
@@ -270,11 +271,11 @@ Until expert matching launches, the Platforms page has a contact section for any
 | ID | Requirement |
 |---|---|
 | `CON-01` | The Platforms page has a contact section that anyone can use without signing in: an email form, plus Telegram and Discord links. It offers general help (choosing platforms, getting accepted, finding work, pay, using your field). It does not replace expert contact requests, which still need sign-in (`EXP-01`). |
-| `CON-02` | The form asks for an email address, a topic from a fixed list, a message (20 to 1,000 characters) and, optionally, a name. The sender MUST tick the same confirmation as `EXP-02`. The server checks every field again. |
+| `CON-02` | The form asks for an email address, a message (20 to 1,000 characters) and, optionally, a name. The server checks every field again. Until 15 November 2026 it also asked for a topic from a fixed list and the same confirmation as `EXP-02`; the owner removed both (#7), and messages stored before then keep theirs. |
 | `CON-03` | Messages are stored on the server only and never shown on any public page. Until an email provider is chosen (§13), the team reads them with `npm run contact:list`, which neutralises control characters in visitor text before printing it. |
 | `CON-04` | At most 3 messages per network address per hour, and a hidden field turns bots away (`SEC-04`). The address is the one the hosting proxy recorded (a setting that must match the host), never one the visitor sends, and it is stored only as a hash mixed with a server secret. In production the server refuses to start without that secret (at least 32 characters). The count and the insert happen under a lock, so simultaneous messages cannot exceed the limit. |
 | `CON-05` | The Telegram and Discord buttons appear only once they are set in configuration. They are team or community channels, never anyone's personal account (`SEC-03`). **Exception (14 November 2026, #3):** until the team has its own channels, the owner approved two personal accounts: Telegram `@happyman01110` and Discord `sina2949`. Discord has no link that opens a chat from a username, so the section shows the username with a copy button, and links it to the profile once a numeric user ID is set. Both are swapped for team channels in `src/config.ts` when those exist. |
-| `CON-06` | The section says plainly that we never ask for platform logins or passwords and never do assessments or tasks for anyone, and asks people not to send task content (`EXP-12`, Appendix A). |
+| `CON-06` | By the owner's decision (15 November 2026, #7), the section no longer states the community rules. Until then it said that we never ask for platform logins or passwords and never do assessments or tasks for anyone, and asked people not to send task content. `EXP-12` and Appendix A are unchanged. |
 
 ---
 
@@ -316,7 +317,7 @@ This module carries over from v2.1 unchanged in substance. It is phase 3 and can
 | `trend_work_types` | data_date, slug, label, open_count, median, typical_low, typical_high, rate_samples, platforms |
 | `trend_platforms` | data_date, slug, name, open_count |
 | `trend_weekly` | iso_week, new_roles, as_of_date |
-| `contact_messages` | id, created_at, name, email, topic, message, policy_confirmed_at, address_hash, status (new, answered) |
+| `contact_messages` | id, created_at, name, email, topic (empty since #7), message, policy_confirmed_at (empty since #7), address_hash, status (new, answered) |
 | `sources`, `source_syncs`, `jobs`, `job_versions`, `saved_jobs`, `applications`, `notifications` | Jobs module only; as in v2.1 §13 |
 | `audit_events` | actor_id, action, resource, at (append-only) |
 
@@ -427,7 +428,7 @@ Sizes are rough, for one or two developers.
 | AT-12 | (Jobs) Apply uses `apply_url` when present, else `listing_url`; never a description link. |
 | AT-13 | (Jobs) An incomplete feed read never closes a role. |
 | AT-14 | Deleting an account removes the member's personal data from requests within 30 days. |
-| AT-15 | A contact-form message without the rules confirmation, with a wrong email address or with a too-short message is refused with a clear message, and what was typed is kept. |
+| AT-15 | A contact-form message with a wrong email address or with a too-short message is refused with a clear message, and what was typed is kept. |
 | AT-16 | A fourth contact-form message from the same address within an hour is refused; a filled hidden field stores nothing. |
 
 ---
