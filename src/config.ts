@@ -6,7 +6,7 @@ export const siteConfig = {
   /** Working names until the product name is decided (spec §13). */
   name: "AI Training Opportunity & Expert Support Platform",
   shortName: "AI Training Platform",
-  description: "Daily trends for AI training work: open roles, kinds of work, advertised pay and platforms. Free.",
+  description: "Trends for AI training work, updated several times a day: open roles, kinds of work, advertised pay and platforms. Free.",
 } as const;
 
 export const trendsConfig = {
@@ -23,15 +23,31 @@ export const trendsConfig = {
   maxTotalChangeRatio: 0.5,
   /** TRD-08: hide pay figures that rest on fewer rate samples than this. */
   minPaySamples: 10,
-  /** TRD-09: show an out-of-date notice when the newest snapshot is older than this. */
-  staleAfterHours: 26,
+  /**
+   * TRD-01 (ADR 0006): when the collection runs. AITraining.jobs rebuilds its files a few minutes
+   * past every hour, so we read them every `everyHours` hours, `minuteUtc` minutes past the hour,
+   * counting from midnight UTC: with 6 and 30, at 00:30, 06:30, 12:30 and 18:30 UTC.
+   */
+  schedule: {
+    everyHours: 6,
+    minuteUtc: 30,
+    /**
+     * The app server runs the schedule itself. Set TRENDS_SCHEDULE=off when something else runs
+     * `npm run trends:collect` instead (a cron job), or on all but one server when several run.
+     */
+    inApp: process.env.TRENDS_SCHEDULE !== "off",
+    /** After a start that missed a run, wait this long before catching up, so the server settles first. */
+    catchUpDelayMs: 30_000,
+  },
+  /** TRD-09: show an out-of-date notice when the newest snapshot is older than this: one missed run plus some slack. */
+  staleAfterHours: 8,
   /** Overview page: how many recent weeks the new-roles chart shows. */
   overviewWeeks: 12,
   /** Overview page: how many platforms the chart shows; the data table lists them all. */
   overviewTopPlatforms: 15,
   /**
-   * TRD-11: per-platform counts read from the AITraining.jobs job search once a day, right after
-   * roles.json. Only the `total` of each search is kept; individual roles are never stored.
+   * TRD-11: per-platform counts read from the AITraining.jobs job search on every collection run,
+   * right after roles.json. Only the `total` of each search is kept; individual roles are never stored.
    */
   platformStats: {
     searchUrl: "https://aitraining.jobs/api/v1/jobs",
@@ -43,6 +59,11 @@ export const trendsConfig = {
     requestDelayMs: 500,
     /** Live search counts only match a roles file this many days old or newer (UTC). */
     maxLagDays: 1,
+    /**
+     * Counts younger than this are not redone, so restarts and manual runs between scheduled runs
+     * don't repeat the searches. Below `schedule.everyHours`, so every scheduled run counts afresh.
+     */
+    minHoursBetweenCounts: 5,
   },
   /** Platform race page. */
   race: {

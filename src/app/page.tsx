@@ -8,7 +8,9 @@ import {
   formatCount,
   formatDataDate,
   formatShortDate,
+  formatUpdateTime,
   isStale,
+  updateCadence,
 } from "@/trends/present";
 import { getTrendsOverview, type TotalsFigures, type TrendsOverview } from "@/trends/queries";
 import { ChartCard, DataTable } from "./_components/chart-card";
@@ -22,7 +24,7 @@ export default function Home() {
     <main className={`${pageWidth} flex-1 pb-20 sm:pb-28`}>
       <section className="pt-14 pb-10 sm:pt-20 sm:pb-14">
         <h1 className="max-w-4xl text-4xl leading-[1.1] font-bold tracking-tight text-balance text-ink sm:text-5xl lg:text-6xl">
-          The AI training job market, updated daily
+          The AI training job market, updated {updateCadence()}
         </h1>
         <p className="mt-6 max-w-3xl text-lg leading-8 text-ink-2 sm:text-xl sm:leading-9">
           How many AI training roles are open, what kind of work they need, what they advertise per hour, and which
@@ -46,8 +48,8 @@ async function Overview() {
   const stale = isStale(data.roles.fetchedAt, new Date());
   return (
     <div className="flex flex-col gap-8 sm:gap-10">
-      {stale && <StaleNotice dataDate={data.roles.dataDate} />}
-      <Headline totals={data.roles.totals} previous={data.roles.previous} />
+      {stale && <StaleNotice dataDate={data.roles.dataDate} updatedAt={data.roles.updatedAt} />}
+      <Headline totals={data.roles.totals} previous={data.roles.previous} updatedAt={data.roles.updatedAt} />
       <NewRolesChart data={data} />
       <KindOfWorkChart data={data} />
       <PayChart data={data} />
@@ -56,7 +58,15 @@ async function Overview() {
   );
 }
 
-function Headline({ totals, previous }: { totals: TotalsFigures; previous: TotalsFigures | null }) {
+function Headline({
+  totals,
+  previous,
+  updatedAt,
+}: {
+  totals: TotalsFigures;
+  previous: TotalsFigures | null;
+  updatedAt: Date;
+}) {
   const tiles = [
     { label: "Open roles", value: totals.openRoles, before: previous?.openRoles },
     { label: "Platforms hiring", value: totals.platformsLive, before: previous?.platformsLive },
@@ -65,7 +75,8 @@ function Headline({ totals, previous }: { totals: TotalsFigures; previous: Total
   return (
     <section aria-labelledby="headline-title">
       <h2 id="headline-title" className="text-lg font-semibold text-ink-2">
-        Figures for <span className="text-ink">{formatDataDate(totals.dataDate)}</span>
+        Figures for <span className="text-ink">{formatDataDate(totals.dataDate)}</span>, as of{" "}
+        <span className="text-ink">{formatUpdateTime(updatedAt)}</span>
       </h2>
       <dl className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
         {tiles.map((t) => {

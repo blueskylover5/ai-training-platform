@@ -7,7 +7,7 @@ A free service with two parts:
 
 The product baseline is [docs/system-design-v3.md](docs/system-design-v3.md). Architecture decisions are in [docs/adr](docs/adr).
 
-**Status:** Phase 1 (Trends) is in development. Daily collection, the trends overview page and the Platforms guide (platform race, sectors, pay and a contact form) work; separate chart pages and share images are next.
+**Status:** Phase 1 (Trends) is in development. Collection every 6 hours, the trends overview page and the Platforms guide (platform race, sectors, pay and a contact form) work; separate chart pages and share images are next.
 
 ## Stack
 
@@ -26,15 +26,14 @@ Requires Node.js 26 (see [.nvmrc](.nvmrc)).
 ```bash
 npm ci
 npm run db:migrate       # create the local database in .data/pglite
-npm run trends:collect   # download today's AITraining.jobs figures
-npm run dev              # http://localhost:3000
+npm run dev              # http://localhost:3000; collects the figures by itself (see below)
 ```
 
-The home page shows the trends overview from the newest published figures, and `/platforms` shows the Platforms guide: the platform race, projects by sector, pay and the contact form. Run `trends:collect` once a day to add a day of history; running it twice on the same day changes nothing. It takes 2 to 3 minutes, most of it spent on gently paced per-platform searches (`TRD-11`).
+The home page shows the trends overview from the newest published figures, and `/platforms` shows the Platforms guide: the platform race, projects by sector, pay and the contact form. The figures update themselves: the app server collects them at 00:30, 06:30, 12:30 and 18:30 UTC, and about 30 seconds after it starts if it missed one (`TRD-01`, [ADR 0006](docs/adr/0006-collect-every-6-hours.md)). A run takes 2 to 3 minutes, most of it spent on gently paced per-platform searches (`TRD-11`). A later run on the same day replaces that day's figures with the newer file, so the history keeps one point per day. To collect with a cron job instead, set `TRENDS_SCHEDULE=off` and run `npm run trends:collect`. On serverless hosting, where nothing runs between requests, that is the only way. With several servers, keep the schedule on in one.
 
 In production, set `CONTACT_HASH_SECRET` to a random value of at least 32 characters; the server will not start without it (`CON-04`, see `.env.example`).
 
-The local database (PGlite) can only be open in one program at a time, so stop `npm run dev` before running `db:migrate` or `trends:collect`. Production uses PostgreSQL (`DATABASE_URL`), which has no such limit.
+The local database (PGlite) can only be open in one program at a time, so stop `npm run dev` before running `db:migrate`, `trends:collect` or `contact:list`. While `npm run dev` runs, it does the collecting itself. Production uses PostgreSQL (`DATABASE_URL`), which has no such limit.
 
 ## Scripts
 
@@ -47,7 +46,7 @@ The local database (PGlite) can only be open in one program at a time, so stop `
 | `npm test` | Run the test suite once |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:migrate` | Apply database migrations |
-| `npm run trends:collect` | Download, check and store the day's trend figures, then count each platform's new and big-pay roles (`TRD-01`, `TRD-02`, `TRD-11`) |
+| `npm run trends:collect` | One collection run by hand or from cron: download, check and store the latest trend figures, then count each platform's new and big-pay roles (`TRD-01`, `TRD-02`, `TRD-11`) |
 | `npm run contact:list` | Print the newest contact-form messages (`CON-03`); with the local database, stop `npm run dev` first |
 
 Before opening a pull request, run `npm run lint && npm run typecheck && npm test && npm run build`.

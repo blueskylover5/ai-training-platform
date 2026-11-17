@@ -28,6 +28,8 @@ export type SnapshotKind = FileKind | "platform_stats";
 
 export type CollectOutcome =
   | { kind: SnapshotKind; status: "published"; dataDate: string; snapshotId: number }
+  /** A newer file or newer counts replaced the ones published earlier for the same date (TRD-01). */
+  | { kind: SnapshotKind; status: "updated"; dataDate: string; snapshotId: number }
   | { kind: SnapshotKind; status: "held"; dataDate: string; snapshotId: number; reason: string }
   | { kind: SnapshotKind; status: "skipped"; dataDate: string; reason: string }
   | { kind: SnapshotKind; status: "rejected"; reason: string };
@@ -42,7 +44,7 @@ export interface CollectDeps {
   maxTotalChangeRatio?: number;
 }
 
-type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
+export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 
 interface FileSpec<T extends { temporal_coverage: string; updated: string }> {
   kind: FileKind;
@@ -51,11 +53,14 @@ interface FileSpec<T extends { temporal_coverage: string; updated: string }> {
   /** Returns a reason to hold the snapshot instead of publishing it, or null. */
   holdReason?: (file: T) => Promise<string | null>;
   insertRows: (tx: Tx, file: T, snapshotId: number, published: boolean) => Promise<void>;
+  /** Removes a snapshot's own rows before a newer file for its date replaces them. */
+  deleteRows: (tx: Tx, snapshotId: number) => Promise<void>;
 }
 
 /**
- * Downloads, validates and stores today's AITraining.jobs open data (TRD-01, TRD-02).
- * Safe to run any number of times: a date that is already stored is skipped.
+ * Downloads, validates and stores the AITraining.jobs open data (TRD-01, TRD-02). Runs every few
+ * hours (ADR 0006): the source rebuilds its files hourly, and each date keeps one snapshot holding
+ * the newest file seen for it. Safe to run any number of times: an unchanged file changes nothing.
  */
 export async function collectTrends(deps: CollectDeps): Promise<CollectOutcome[]> {
   const sources = deps.sources ?? trendsConfig.sources;
@@ -87,6 +92,12 @@ export async function collectTrends(deps: CollectDeps): Promise<CollectOutcome[]
           });
       }
     },
+    // The weekly figures are shared and stay: the newer file's upsert above refreshes them.
+    deleteRows: async (tx, snapshotId) => {
+      await tx.delete(trendTotals).where(eq(trendTotals.snapshotId, snapshotId));
+      await tx.delete(trendWorkTypes).where(eq(trendWorkTypes.snapshotId, snapshotId));
+      await tx.delete(trendPlatforms).where(eq(trendPlatforms.snapshotId, snapshotId));
+    },
   };
 
   const pay: FileSpec<PayFile> = {
@@ -95,6 +106,9 @@ export async function collectTrends(deps: CollectDeps): Promise<CollectOutcome[]
     schema: payFileSchema,
     insertRows: async (tx, file, snapshotId) => {
       await tx.insert(trendPay).values(payRows(file, snapshotId));
+    },
+    deleteRows: async (tx, snapshotId) => {
+      await tx.delete(trendPay).where(eq(trendPay.snapshotId, snapshotId));
     },
   };
 
@@ -128,52 +142,91 @@ async function collectFile<T extends { temporal_coverage: string; updated: strin
   if (!parsed.success) return reject(`schema check failed: ${describeIssues(parsed.error)}`);
   const file = parsed.data;
   const dataDate = file.temporal_coverage;
+  const sourceUpdatedAt = parseTimestamp(file.updated);
+  const sha256 = createHash("sha256").update(text).digest("hex");
+  const skip = (reason: string): CollectOutcome => ({ kind: spec.kind, status: "skipped", dataDate, reason });
 
-  const skipped: CollectOutcome = {
-    kind: spec.kind,
-    status: "skipped",
-    dataDate,
-    reason: "a snapshot for this date is already stored",
-  };
-  const existing = await deps.db
-    .select({ id: trendSnapshots.id })
-    .from(trendSnapshots)
-    .where(and(eq(trendSnapshots.dataDate, dataDate), eq(trendSnapshots.fileKind, spec.kind)))
-    .limit(1);
-  if (existing.length > 0) return skipped;
+  // TRD-01: one snapshot per date. A later run on that date replaces it, but only with a newer file.
+  const [stored] = await storedSnapshot(deps.db, dataDate, spec.kind);
+  const notNewer = stored ? notNewerReason(stored, sha256, sourceUpdatedAt) : null;
+  if (notNewer) return skip(notNewer);
 
   const holdReason = spec.holdReason ? await spec.holdReason(file) : null;
-  const sha256 = createHash("sha256").update(text).digest("hex");
+  const status = holdReason === null ? "published" : "held";
   const rawKey = `aitraining-jobs/${dataDate}/${spec.kind}-${sha256.slice(0, 12)}.json`;
   await deps.rawStore.put(rawKey, text);
 
-  const snapshotId = await deps.db.transaction(async (tx) => {
-    const inserted = await tx
-      .insert(trendSnapshots)
-      .values({
-        dataDate,
-        fileKind: spec.kind,
-        sourceUrl: spec.url,
-        sourceUpdatedAt: parseTimestamp(file.updated),
-        rawKey,
-        sha256,
-        status: holdReason === null ? "published" : "held",
-        holdReason,
-      })
-      .onConflictDoNothing()
-      .returning({ id: trendSnapshots.id });
-    const row = inserted[0];
-    if (!row) return null; // another run stored this date first
-    await spec.insertRows(tx, file, row.id, holdReason === null);
-    return row.id;
+  const fields = { sourceUrl: spec.url, sourceUpdatedAt, rawKey, sha256, status, holdReason } as const;
+  const result = await deps.db.transaction(async (tx): Promise<{ id: number; replaced: boolean } | { skip: string }> => {
+    // Locks the date's snapshot, so two runs at once replace it one after the other.
+    const [current] = await storedSnapshot(tx, dataDate, spec.kind, { lock: true });
+    if (!current) {
+      const inserted = await tx
+        .insert(trendSnapshots)
+        .values({ dataDate, fileKind: spec.kind, ...fields })
+        .onConflictDoNothing()
+        .returning({ id: trendSnapshots.id });
+      const row = inserted[0];
+      if (!row) return { skip: "another run stored this date at the same time" };
+      await spec.insertRows(tx, file, row.id, status === "published");
+      return { id: row.id, replaced: false };
+    }
+    // Another run may have stored a file for this date since the check above.
+    const lateReason = notNewerReason(current, sha256, sourceUpdatedAt);
+    if (lateReason) return { skip: lateReason };
+    // TRD-02: a newer file that fails the checks never replaces figures already published.
+    if (current.status === "published" && holdReason !== null) {
+      return { skip: `a newer file was held (${holdReason}); the figures published earlier for this date stay` };
+    }
+    await spec.deleteRows(tx, current.id);
+    await tx
+      .update(trendSnapshots)
+      .set({ ...fields, fetchedAt: sql`now()` })
+      .where(eq(trendSnapshots.id, current.id));
+    await spec.insertRows(tx, file, current.id, status === "published");
+    return { id: current.id, replaced: true };
   });
 
-  if (snapshotId === null) return skipped;
+  if ("skip" in result) {
+    if (holdReason !== null) {
+      await deps.alert(`[trends] newer ${spec.kind}.json for ${dataDate} held, not published: ${holdReason}`);
+    }
+    return skip(result.skip);
+  }
   if (holdReason !== null) {
     await deps.alert(`[trends] ${spec.kind}.json for ${dataDate} held, not published: ${holdReason}`);
-    return { kind: spec.kind, status: "held", dataDate, snapshotId, reason: holdReason };
+    return { kind: spec.kind, status: "held", dataDate, snapshotId: result.id, reason: holdReason };
   }
-  return { kind: spec.kind, status: "published", dataDate, snapshotId };
+  return { kind: spec.kind, status: result.replaced ? "updated" : "published", dataDate, snapshotId: result.id };
+}
+
+/** The snapshot stored for a date and kind, if any. `lock` holds it until the transaction ends. */
+export function storedSnapshot(db: Db | Tx, dataDate: string, kind: SnapshotKind, options: { lock?: boolean } = {}) {
+  const query = db
+    .select({
+      id: trendSnapshots.id,
+      sha256: trendSnapshots.sha256,
+      sourceUpdatedAt: trendSnapshots.sourceUpdatedAt,
+      status: trendSnapshots.status,
+      fetchedAt: trendSnapshots.fetchedAt,
+    })
+    .from(trendSnapshots)
+    .where(and(eq(trendSnapshots.dataDate, dataDate), eq(trendSnapshots.fileKind, kind)))
+    .limit(1);
+  return options.lock ? query.for("update") : query;
+}
+
+/** Why a downloaded file must not replace the one stored for its date, or null when it is newer. */
+function notNewerReason(
+  stored: { sha256: string; sourceUpdatedAt: Date | null },
+  sha256: string,
+  sourceUpdatedAt: Date | null,
+): string | null {
+  if (stored.sha256 === sha256) return "this file is already stored";
+  if (stored.sourceUpdatedAt && sourceUpdatedAt && sourceUpdatedAt.getTime() <= stored.sourceUpdatedAt.getTime()) {
+    return "the file stored for this date is as new or newer";
+  }
+  return null;
 }
 
 /** TRD-02: a large jump in total open roles usually means a source problem, so hold for review. */

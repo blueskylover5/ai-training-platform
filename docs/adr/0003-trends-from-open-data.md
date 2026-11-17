@@ -1,6 +1,6 @@
 # ADR 0003: Trends come from AITraining.jobs open data
 
-- **Status:** Accepted
+- **Status:** Accepted; how often to collect, and what a later run on the same date does, amended by [ADR 0006](0006-collect-every-6-hours.md) (every 6 hours)
 - **Date:** 2026-11-09
 - **Design reference:** system design v3.0, §5 (`TRD-01` to `TRD-10`)
 

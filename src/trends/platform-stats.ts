@@ -4,16 +4,17 @@ import { z } from "zod";
 import { trendsConfig } from "../config";
 import type { Db } from "../db/client";
 import { trendPlatforms, trendPlatformStats, trendSnapshots } from "../db/schema";
-import type { CollectOutcome } from "./collect";
+import { storedSnapshot, type CollectOutcome } from "./collect";
 import type { FetchText } from "./fetch";
 import type { RawStore } from "./raw-store";
 import { describeIssues } from "./schema";
 
 /**
- * TRD-11: per-platform counts from the AITraining.jobs job search, collected once a day right
- * after roles.json (ADR 0004). For every platform in the newest published roles file we run
- * three searches and keep only each search's `total`: open roles, roles first listed in the
+ * TRD-11: per-platform counts from the AITraining.jobs job search, collected on every run right
+ * after roles.json (ADR 0004, ADR 0006). For every platform in the newest published roles file we
+ * run three searches and keep only each search's `total`: open roles, roles first listed in the
  * last N days, and roles whose advertised hourly pay reaches a threshold. Roles are never stored.
+ * Each date keeps one set of counts, replaced by fresher ones on later runs that day.
  */
 
 /** The part of a job-search answer we use. The roles in it are ignored. */
@@ -28,6 +29,7 @@ export interface PlatformStatsSettings {
   bigPayMinHourlyUsd: number;
   requestDelayMs: number;
   maxLagDays: number;
+  minHoursBetweenCounts: number;
   /** Hold when the searches add up to a total this far from roles.json (as in TRD-02). */
   maxTotalChangeRatio: number;
 }
@@ -51,17 +53,20 @@ export interface PlatformStatsCounts {
   bigPayRoles: number;
 }
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR_MS;
 const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 function defaultSettings(): PlatformStatsSettings {
-  const { searchUrl, newWindowDays, bigPayMinHourlyUsd, requestDelayMs, maxLagDays } = trendsConfig.platformStats;
+  const { searchUrl, newWindowDays, bigPayMinHourlyUsd, requestDelayMs, maxLagDays, minHoursBetweenCounts } =
+    trendsConfig.platformStats;
   return {
     searchUrl,
     newWindowDays,
     bigPayMinHourlyUsd,
     requestDelayMs,
     maxLagDays,
+    minHoursBetweenCounts,
     maxTotalChangeRatio: trendsConfig.maxTotalChangeRatio,
   };
 }
@@ -146,13 +151,15 @@ export async function collectPlatformStats(deps: PlatformStatsDeps): Promise<Col
     };
   }
 
-  const existing = await deps.db
-    .select({ id: trendSnapshots.id })
-    .from(trendSnapshots)
-    .where(and(eq(trendSnapshots.dataDate, dataDate), eq(trendSnapshots.fileKind, kind)))
-    .limit(1);
-  if (existing.length > 0) {
-    return { kind, status: "skipped", dataDate, reason: "platform counts for this date are already stored" };
+  // Counts for this date are redone on later runs, but not more often than the setting allows.
+  const [stored] = await storedSnapshot(deps.db, dataDate, kind);
+  if (stored && now.getTime() - stored.fetchedAt.getTime() < settings.minHoursBetweenCounts * HOUR_MS) {
+    return {
+      kind,
+      status: "skipped",
+      dataDate,
+      reason: `the platform counts for this date are less than ${settings.minHoursBetweenCounts} hours old`,
+    };
   }
 
   const platforms = await deps.db
@@ -219,26 +226,40 @@ export async function collectPlatformStats(deps: PlatformStatsDeps): Promise<Col
   const rawKey = `aitraining-jobs/${dataDate}/platform-stats-${sha256.slice(0, 12)}.json`;
   await deps.rawStore.put(rawKey, text);
 
-  const snapshotId = await deps.db.transaction(async (tx) => {
-    const inserted = await tx
-      .insert(trendSnapshots)
-      .values({
-        dataDate,
-        fileKind: kind,
-        sourceUrl: settings.searchUrl,
-        rawKey,
-        sha256,
-        status: holdReason === null ? "published" : "held",
-        holdReason,
-      })
-      .onConflictDoNothing()
-      .returning({ id: trendSnapshots.id });
-    const row = inserted[0];
-    if (!row) return null; // another run stored this date first
+  const fields = {
+    sourceUrl: settings.searchUrl,
+    rawKey,
+    sha256,
+    status: holdReason === null ? ("published" as const) : ("held" as const),
+    holdReason,
+    fetchedAt: now,
+  };
+  const result = await deps.db.transaction(async (tx): Promise<{ id: number; replaced: boolean } | { skip: string }> => {
+    // Locks the date's counts, so two runs at once replace them one after the other.
+    const [current] = await storedSnapshot(tx, dataDate, kind, { lock: true });
+    let snapshotId: number;
+    if (!current) {
+      const inserted = await tx
+        .insert(trendSnapshots)
+        .values({ dataDate, fileKind: kind, ...fields })
+        .onConflictDoNothing()
+        .returning({ id: trendSnapshots.id });
+      const row = inserted[0];
+      if (!row) return { skip: "another run stored platform counts for this date at the same time" };
+      snapshotId = row.id;
+    } else {
+      // Counts that fail the checks never replace counts already published for the date.
+      if (current.status === "published" && holdReason !== null) {
+        return { skip: `the new counts were held (${holdReason}); the counts published earlier for this date stay` };
+      }
+      await tx.delete(trendPlatformStats).where(eq(trendPlatformStats.snapshotId, current.id));
+      await tx.update(trendSnapshots).set(fields).where(eq(trendSnapshots.id, current.id));
+      snapshotId = current.id;
+    }
     if (counts.length > 0) {
       await tx.insert(trendPlatformStats).values(
         counts.map((c) => ({
-          snapshotId: row.id,
+          snapshotId,
           dataDate,
           slug: c.slug,
           name: c.name,
@@ -250,15 +271,18 @@ export async function collectPlatformStats(deps: PlatformStatsDeps): Promise<Col
         })),
       );
     }
-    return row.id;
+    return { id: snapshotId, replaced: current !== undefined };
   });
 
-  if (snapshotId === null) {
-    return { kind, status: "skipped", dataDate, reason: "platform counts for this date are already stored" };
+  if ("skip" in result) {
+    if (holdReason !== null) {
+      await deps.alert(`[trends] new platform counts for ${dataDate} held, not published: ${holdReason}`);
+    }
+    return { kind, status: "skipped", dataDate, reason: result.skip };
   }
   if (holdReason !== null) {
     await deps.alert(`[trends] platform counts for ${dataDate} held, not published: ${holdReason}`);
-    return { kind, status: "held", dataDate, snapshotId, reason: holdReason };
+    return { kind, status: "held", dataDate, snapshotId: result.id, reason: holdReason };
   }
-  return { kind, status: "published", dataDate, snapshotId };
+  return { kind, status: result.replaced ? "updated" : "published", dataDate, snapshotId: result.id };
 }

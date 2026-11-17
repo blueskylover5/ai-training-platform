@@ -16,6 +16,18 @@ export function formatDataDate(isoDate: string): string {
   });
 }
 
+/** 2026-11-18T12:07:54Z → "12:07 UTC" */
+export function formatUpdateTime(at: Date): string {
+  const time = at.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "UTC" });
+  return `${time} UTC`;
+}
+
+/** How often the figures are updated, from the schedule (TRD-01): "every 6 hours". */
+export function updateCadence(everyHours: number = trendsConfig.schedule.everyHours): string {
+  if (everyHours === 24) return "every day";
+  return everyHours === 1 ? "every hour" : `every ${everyHours} hours`;
+}
+
 /** TRD-04: the credit text shown with every chart, page, share image and export. */
 export function creditLine(dataDate: string): string {
   const { name, license } = trendsConfig.credit;

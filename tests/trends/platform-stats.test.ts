@@ -138,16 +138,71 @@ describe("collectPlatformStats (TRD-11)", () => {
     expect(body).not.toContain("title");
   });
 
-  it("does not count a date twice", async () => {
+  it("does not count a date again within 5 hours", async () => {
     await publishRolesFixture();
     await collectPlatformStats(deps());
     requests = [];
 
-    const again = await collectPlatformStats(deps());
+    const again = await collectPlatformStats(deps({ now: () => new Date("2026-11-09T10:59:59Z") }));
 
-    expect(again).toMatchObject({ status: "skipped", dataDate: "2026-11-09" });
+    expect(again).toMatchObject({
+      status: "skipped",
+      dataDate: "2026-11-09",
+      reason: "the platform counts for this date are less than 5 hours old",
+    });
     expect(requests).toEqual([]);
     expect(await statsSnapshots()).toHaveLength(1);
+  });
+
+  it("recounts on a later run that day and replaces the date's counts (ADR 0006)", async () => {
+    await publishRolesFixture();
+    const first = await collectPlatformStats(deps());
+    requests = [];
+    // Six hours on, a fifth of each platform's roles are new instead of a tenth.
+    search = (url) =>
+      url.searchParams.has("since")
+        ? searchAnswer(Math.floor((openBySlug.get(url.searchParams.get("platform") ?? "") ?? 0) / 5))
+        : honestSearch(url);
+    const later = new Date("2026-11-09T12:00:00Z");
+
+    const outcome = await collectPlatformStats(deps({ now: () => later }));
+
+    expect(outcome).toMatchObject({
+      status: "updated",
+      dataDate: "2026-11-09",
+      snapshotId: first.status === "published" ? first.snapshotId : -1,
+    });
+    expect(requests).toHaveLength(62 * 3);
+    const [{ n }] = await handle.db.select({ n: count() }).from(trendPlatformStats);
+    expect(n).toBe(62);
+    const [invisible] = await handle.db
+      .select()
+      .from(trendPlatformStats)
+      .where(eq(trendPlatformStats.slug, "invisible-technologies"));
+    expect(invisible).toMatchObject({ openRoles: 533, newRoles: 106 });
+    const [snapshot] = await handle.db.select().from(trendSnapshots).where(eq(trendSnapshots.fileKind, "platform_stats"));
+    expect(snapshot).toMatchObject({ status: "published", fetchedAt: later });
+    expect(alerts).toEqual([]);
+  });
+
+  it("keeps the published counts when fresher ones look wrong", async () => {
+    await publishRolesFixture();
+    await collectPlatformStats(deps());
+    // "since" ignored: every open role looks new.
+    search = (url) => (url.searchParams.has("since") ? honestSearch(new URL(`${SEARCH}?platform=${url.searchParams.get("platform")}`)) : honestSearch(url));
+
+    const outcome = await collectPlatformStats(deps({ now: () => new Date("2026-11-09T12:00:00Z") }));
+
+    expect(outcome).toMatchObject({ status: "skipped", dataDate: "2026-11-09" });
+    expect(outcome.status === "skipped" && outcome.reason).toMatch(/^the new counts were held .*the counts published earlier for this date stay$/);
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]).toMatch(/^\[trends\] new platform counts for 2026-11-09 held, not published: /);
+    expect(await statsSnapshots()).toEqual([{ status: "published", holdReason: null }]);
+    const [invisible] = await handle.db
+      .select()
+      .from(trendPlatformStats)
+      .where(eq(trendPlatformStats.slug, "invisible-technologies"));
+    expect(invisible).toMatchObject({ newRoles: 53 });
   });
 
   it("skips when the newest roles file is too old to pair with live counts", async () => {
