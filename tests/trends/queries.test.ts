@@ -180,9 +180,12 @@ describe("getPlatformRace (TRD-11)", () => {
       expect(guide?.roles).toEqual({
         dataDate: overview?.roles.dataDate,
         fetchedAt: overview?.roles.fetchedAt,
+        updatedAt: overview?.roles.updatedAt,
         totals: overview?.roles.totals,
         workTypes: overview?.roles.workTypes,
       });
+      // Shown as "as of …": when AITraining.jobs built the file, not when we fetched it.
+      expect(guide?.roles.updatedAt).toEqual(new Date("2026-11-09T08:07:11.359Z"));
       expect(guide?.pay).toEqual(overview?.pay);
       expect(guide?.race).toEqual(race);
     });

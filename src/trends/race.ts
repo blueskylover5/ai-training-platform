@@ -116,7 +116,7 @@ export function buildRaces(data: PlatformRaceData, options: RaceOptions): RaceVi
   };
 
   const counted = platforms.filter((p) => p.stats !== null);
-  const notYet = "Starts after the next daily update.";
+  const notYet = "Starts after the next update.";
   if (!stats || counted.length === 0) {
     const pending = (key: RaceKey, emoji: string, label: string): RaceView => ({
       ...openRace,

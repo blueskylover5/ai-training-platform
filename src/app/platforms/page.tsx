@@ -4,7 +4,15 @@ import { Suspense, type ReactNode } from "react";
 import { siteConfig, trendsConfig } from "@/config";
 import { getDb } from "@/db/server";
 import { bigPayOdds, payHighlights, sectorShares, type BigPayOdds, type SectorShare } from "@/trends/insights";
-import { formatCount, formatDataDate, formatMoney, formatShortDate, isStale } from "@/trends/present";
+import {
+  formatCount,
+  formatDataDate,
+  formatMoney,
+  formatShortDate,
+  formatUpdateTime,
+  isStale,
+  updateCadence,
+} from "@/trends/present";
 import { getPlatformGuide, type PlatformGuideData, type PlatformRaceData } from "@/trends/queries";
 import { buildRaces, toBoard } from "@/trends/race";
 import { ChartCard, DataExtras, DataTable } from "../_components/chart-card";
@@ -19,7 +27,7 @@ import { ScrollToHash } from "./scroll-to-hash";
 export const metadata: Metadata = {
   title: `AI training platforms: who's hiring, which fields and what they pay · ${siteConfig.shortName}`,
   description:
-    "How AI training platforms compare today: open and new roles, projects by sector and advertised pay, updated daily. Stuck? Contact us.",
+    `How AI training platforms compare today: open and new roles, projects by sector and advertised pay, updated ${updateCadence()}. Stuck? Contact us.`,
 };
 
 const sections = [
@@ -46,7 +54,7 @@ function Hero() {
     <section className="border-b border-line">
       <div className={`${pageWidth} py-14 sm:py-20 lg:py-24`}>
         <p className="inline-flex items-center gap-2 rounded-full bg-tint px-4 py-1.5 text-sm font-semibold text-ink-2">
-          <span aria-hidden="true">🏁</span> Updated every day
+          <span aria-hidden="true">🏁</span> Updated {updateCadence()}
         </p>
         <h1 className="mt-6 max-w-4xl text-4xl leading-[1.1] font-bold tracking-tight text-balance text-ink sm:text-5xl lg:text-6xl">
           Get paid to help train AI. See where the work is.
@@ -165,11 +173,12 @@ function AtAGlance({ guide, stale }: { guide: PlatformGuideData; stale: boolean 
       <div className={pageWidth}>
         {stale && (
           <div className="mb-8">
-            <StaleNotice dataDate={totals.dataDate} />
+            <StaleNotice dataDate={totals.dataDate} updatedAt={guide.roles.updatedAt} />
           </div>
         )}
         <h2 id="glance-heading" className="text-lg font-semibold text-ink-2">
-          Today at a glance · <span className="text-ink">{formatDataDate(totals.dataDate)}</span>
+          Today at a glance · <span className="text-ink">{formatDataDate(totals.dataDate)}</span>, as of{" "}
+          <span className="text-ink">{formatUpdateTime(guide.roles.updatedAt)}</span>
         </h2>
         <dl className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {tiles.map((t) => (
@@ -200,7 +209,7 @@ function PlatformsSection({ race }: { race: PlatformRaceData }) {
         ) : (
           <p>
             {formatCount(race.platforms.length)} platforms race on open roles. Races on new roles and big pay start
-            after the next daily update.
+            after the next update.
           </p>
         )
       }
@@ -222,7 +231,7 @@ function PlatformsSection({ race }: { race: PlatformRaceData }) {
 function raceDescription({ platforms, stats }: PlatformRaceData) {
   const field = `${formatCount(platforms.length)} platforms`;
   if (!stats) {
-    return `${field} race on open roles. Races on new roles and big pay start after the next daily update.`;
+    return `${field} race on open roles. Races on new roles and big pay start after the next update.`;
   }
   return `Three races between the same ${field}: open roles, roles first listed since ${formatShortDate(stats.newSince)}, and roles advertising $${formatCount(stats.bigPayMinHourlyUsd)} or more an hour. Places that change when you switch races are marked ▲ or ▼.`;
 }

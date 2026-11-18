@@ -51,6 +51,8 @@ export interface TrendsOverview {
   roles: {
     dataDate: string;
     fetchedAt: Date;
+    /** When AITraining.jobs built that file (its `updated` time), or when we fetched it if that is unknown. */
+    updatedAt: Date;
     totals: TotalsFigures;
     /** The published roles file before it, for day-on-day changes. */
     previous: TotalsFigures | null;
@@ -65,11 +67,21 @@ export interface TrendsOverview {
 
 async function latestPublished(db: Db, kind: "roles" | "pay" | "platform_stats", limit: number) {
   return db
-    .select({ id: trendSnapshots.id, dataDate: trendSnapshots.dataDate, fetchedAt: trendSnapshots.fetchedAt })
+    .select({
+      id: trendSnapshots.id,
+      dataDate: trendSnapshots.dataDate,
+      fetchedAt: trendSnapshots.fetchedAt,
+      sourceUpdatedAt: trendSnapshots.sourceUpdatedAt,
+    })
     .from(trendSnapshots)
     .where(and(eq(trendSnapshots.fileKind, kind), eq(trendSnapshots.status, "published")))
     .orderBy(desc(trendSnapshots.dataDate))
     .limit(limit);
+}
+
+/** When the source built a snapshot's file, falling back to when we fetched it. */
+function updatedAtOf(snapshot: { fetchedAt: Date; sourceUpdatedAt: Date | null }): Date {
+  return snapshot.sourceUpdatedAt ?? snapshot.fetchedAt;
 }
 
 async function totalsFor(db: Db, snapshotId: number): Promise<TotalsFigures | null> {
@@ -144,6 +156,7 @@ export async function getTrendsOverview(db: Db, options: { weeks: number }): Pro
     roles: {
       dataDate: latestRoles.dataDate,
       fetchedAt: latestRoles.fetchedAt,
+      updatedAt: updatedAtOf(latestRoles),
       totals,
       previous,
       workTypes: await workTypesFor(db, latestRoles.id),
@@ -229,7 +242,7 @@ export async function getPlatformRace(db: Db): Promise<PlatformRaceData | null> 
 
 export interface PlatformGuideData {
   /** Newest published roles file: headline figures and open roles by sector. */
-  roles: { dataDate: string; fetchedAt: Date; totals: TotalsFigures; workTypes: WorkTypeCount[] };
+  roles: { dataDate: string; fetchedAt: Date; updatedAt: Date; totals: TotalsFigures; workTypes: WorkTypeCount[] };
   /** Newest published pay file, if any. */
   pay: TrendsOverview["pay"];
   /** The platform race, built on the same roles file. */
@@ -238,7 +251,7 @@ export interface PlatformGuideData {
 
 /**
  * Everything the Platform guide page shows, read once inside one read-only transaction, so every
- * section describes the same published files even while a daily update is being stored.
+ * section describes the same published files even while an update is being stored.
  * Returns null until the first roles file has been published.
  */
 export async function getPlatformGuide(db: Db): Promise<PlatformGuideData | null> {
@@ -251,7 +264,13 @@ export async function getPlatformGuide(db: Db): Promise<PlatformGuideData | null
       const workTypes = await workTypesFor(tx, latestRoles.id);
       const platforms = await platformsFor(tx, latestRoles.id);
       return {
-        roles: { dataDate: latestRoles.dataDate, fetchedAt: latestRoles.fetchedAt, totals, workTypes },
+        roles: {
+          dataDate: latestRoles.dataDate,
+          fetchedAt: latestRoles.fetchedAt,
+          updatedAt: updatedAtOf(latestRoles),
+          totals,
+          workTypes,
+        },
         pay: await latestPay(tx),
         race: await raceFor(tx, latestRoles, platforms),
       };

@@ -28,6 +28,7 @@ Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, f
 - 14 November 2026: the Telegram and Discord buttons use two personal accounts until the team has its own channels, as an exception to `SEC-03` approved by the owner (`CON-05`, #3).
 - 15 November 2026: by the owner's decision, the contact section is shorter (#7). The "We can help with" list, the "Your account stays yours" box, the topic list and the rules confirmation are gone, so the form asks only for an email address, a message and, optionally, a name (`CON-02`, `CON-06`, `AT-15`).
 - The site is light only (black text on a white page) with a larger, roomier layout.
+- 18 November 2026: at the owner's request, trend figures are collected every 6 hours (00:30, 06:30, 12:30 and 18:30 UTC) by a schedule inside the app server. A later run on the same date replaces that date's figures with the newer file, the pages show the time of the figures, and the out-of-date notice appears after 8 hours (`TRD-01`, `TRD-09`, `TRD-11`, `AT-01`). See [ADR 0006](adr/0006-collect-every-6-hours.md).
 
 ### What changed in v3.1 (12 November 2026)
 
@@ -50,7 +51,7 @@ Added the **platform race** page (`TRD-11`): each day, per-platform counts of ne
 
 ### Success measures
 
-- Trend pages are updated every day. No chart is ever more than 26 hours old without a visible "out of date" notice.
+- Trend pages are updated every 6 hours. No chart is ever more than 8 hours old without a visible "out of date" notice.
 - At least 90% of contact requests get an answer (accept or decline) from a team expert within 48 hours.
 - Tracked weekly: visitors to trend pages, sign-ups, contact requests, share of requests marked "resolved", reports upheld.
 - Zero upheld policy incidents involving task content or assessments.
@@ -105,7 +106,7 @@ flowchart LR
   OD --> W[Scheduled worker]
   FEED -.-> W
   W --> DB[(PostgreSQL)]
-  W --> RAW[(File storage - raw daily copies)]
+  W --> RAW[(File storage - raw copies)]
   DB --> WEB[Next.js app]
   WEB --> V[Visitors and members]
   WEB --> EXP[Team experts]
@@ -120,7 +121,7 @@ flowchart LR
 | Charts | Recharts | Line, bar, range and sparkline charts; every chart has an accessible data table |
 | Share images | Server-generated Open Graph images per chart | So shared links show the chart on social media |
 | Database | PostgreSQL 16 | Point-in-time recovery |
-| Worker | Scheduled job runner (cron or a small queue) | Daily trend collection; feed polling if the jobs module is on |
+| Worker | Scheduled job runner: by default a schedule inside the app server, or cron (ADR 0006) | Trend collection every 6 hours; feed polling if the jobs module is on |
 | File storage | S3-compatible | Raw copies of every downloaded data file; expert photos |
 | Email | Transactional provider with SPF, DKIM, DMARC | Contact requests, follow-ups, alerts |
 | Sign-in | Email magic link or passkey; MFA for team experts and admins | |
@@ -140,7 +141,7 @@ AITraining.jobs open data, licensed **CC BY 4.0**: reuse is allowed when AITrain
 |---|---|
 | `https://aitraining.jobs/roles.json` | Totals (open roles, live platforms, new roles in the last 7 days); open roles and pay by kind of work; open roles by platform; new roles per week |
 | `https://aitraining.jobs/pay.json` (also `pay.csv`) | Advertised hourly pay by kind of work |
-| `https://aitraining.jobs/api/v1/jobs` (job search) | Open roles matching filters. Once a day we read only the `total` of three searches per platform (`TRD-11`); the roles in the answers are never stored |
+| `https://aitraining.jobs/api/v1/jobs` (job search) | Open roles matching filters. On every collection run we read only the `total` of three searches per platform (`TRD-11`); the roles in the answers are never stored |
 | Field reference | `https://aitraining.jobs/data` |
 
 Example from 9 November 2026, to show the shape of the data:
@@ -158,7 +159,7 @@ These files hold only the current day's figures. **Saving a copy every day build
 
 | ID | Requirement |
 |---|---|
-| `TRD-01` | Once a day at a fixed UTC time, download `roles.json` and `pay.json`. Store the raw file and the parsed rows under the data's own date (`temporal_coverage`). Running twice on the same date MUST NOT create a second snapshot. |
+| `TRD-01` | Every 6 hours at fixed UTC times (00:30, 06:30, 12:30 and 18:30), download `roles.json` and `pay.json`. Store the raw file and the parsed rows under the data's own date (`temporal_coverage`). Each date keeps one snapshot: a later run on that date replaces its rows with a newer file (by the file's `updated` time), and an unchanged or older file changes nothing. A newer file that `TRD-02` holds MUST NOT replace figures already published for its date. Keep the raw copy of every version. |
 | `TRD-02` | Validate every file against the expected schema. If fields change, or total open roles moves more than 50% from the previous day, do not publish; alert an admin. |
 | `TRD-03` | Never fill in missing days. A missing day appears as a gap in charts. |
 | `TRD-04` | Every chart, page, shared image and export MUST show: "Data: AITraining.jobs open data (CC BY 4.0), [date]", with a link. |
@@ -166,9 +167,9 @@ These files hold only the current day's figures. **Saving a copy every day build
 | `TRD-06` | Every chart states what is counted, the data date and the sample size (rate samples, number of platforms). |
 | `TRD-07` | Pay is labelled "advertised hourly pay", never "earnings". Show median and typical range together. |
 | `TRD-08` | Hide a pay figure when it rests on fewer than 10 rate samples. |
-| `TRD-09` | Trend pages show a notice when the latest snapshot is more than 26 hours old. |
+| `TRD-09` | Trend pages show the date and time of the figures, and a notice when the latest snapshot is more than 8 hours old (one missed run plus some slack). |
 | `TRD-10` | Each chart has a stable URL, a data table for screen readers, and a server-generated share image. |
-| `TRD-11` | Once a day, after `roles.json`, count three figures for every platform listed in it, using the job search: open roles, roles first listed in the last 7 days, and roles whose advertised hourly pay reaches $100 at the top of its range. Keep only the counts, the settings used and a raw record of them. Store nothing when a search fails. Hold (do not publish) when the platform counts add up to more than 50% away from `roles.json`, or when a filter looks ignored (new or big-pay roles equal all open roles). Skip when the newest `roles.json` is more than 1 day old, because the search is live. |
+| `TRD-11` | On every collection run, after `roles.json`, count three figures for every platform listed in it, using the job search: open roles, roles first listed in the last 7 days, and roles whose advertised hourly pay reaches $100 at the top of its range. Keep only the counts, the settings used and a raw record of them. Store nothing when a search fails. Hold (do not publish) when the platform counts add up to more than 50% away from `roles.json`, or when a filter looks ignored (new or big-pay roles equal all open roles). Skip when the newest `roles.json` is more than 1 day old, because the search is live. A later run on the same date replaces the date's counts, but not within 5 hours of the last count, and counts that would be held MUST NOT replace counts already published. |
 
 ### Pages
 
@@ -372,7 +373,7 @@ All endpoints return JSON with `application/problem+json` errors and are rate-li
 
 **Alerts to the team:**
 - a failed or rejected trend download
-- a trend page older than 26 hours
+- a trend page older than 8 hours
 - requests nearing 48 hours unanswered
 - a new report
 - the error rate
@@ -386,7 +387,7 @@ Sizes are rough, for one or two developers.
 | Phase | Deliverables | Exit criteria | Rough size |
 |---|---|---|---|
 | **0 · Discovery** | Product name and domain; trend pages mentioned to AITraining.jobs; team agreement signed; expert profile consents; wireframes; decision records | Every decision in §13 resolved or given an owner and date | 1 week |
-| **1 · Trends (public launch)** | Daily collection, validation, overview, kind-of-work, pay and platform pages, credit lines, share images | AT-01 to AT-05 pass; pages indexed | 2–3 weeks |
+| **1 · Trends (public launch)** | Collection every 6 hours, validation, overview, kind-of-work, pay and platform pages, credit lines, share images | AT-01 to AT-05 pass; pages indexed | 2–3 weeks |
 | **2 · Experts** | Sign-in, expert profiles, matching, contact requests, follow-ups, waitlist, guides, reports, expert and admin consoles | AT-06 to AT-11 and AT-14 pass; 5 team experts live | 3–4 weeks |
 | **3 · Jobs (optional)** | Feed adapter, explorer, eligibility, alerts, tracker | AT-12, AT-13 pass | 3 weeks |
 | **4 · Growth and funding** | Partner reporting, referral agreements, sponsorship slots | First funding agreement signed | Ongoing |
@@ -414,7 +415,7 @@ Sizes are rough, for one or two developers.
 
 | ID | Test |
 |---|---|
-| AT-01 | Running the daily trend download twice on the same date creates one snapshot. |
+| AT-01 | Running the trend download twice with unchanged files keeps one snapshot per date. A newer file for the same date replaces that date's figures, still as one snapshot. |
 | AT-02 | A schema change or a jump of more than 50% in total open roles blocks publishing and alerts an admin. |
 | AT-03 | Every chart, page and share image shows the AITraining.jobs credit line with the data date. |
 | AT-04 | A missing day appears as a gap; nothing is filled in. |

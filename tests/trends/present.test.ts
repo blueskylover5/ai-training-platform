@@ -6,9 +6,11 @@ import {
   formatCount,
   formatMoney,
   formatShortDate,
+  formatUpdateTime,
   isStale,
   niceScale,
   publicPay,
+  updateCadence,
 } from "../../src/trends/present";
 
 describe("creditLine (TRD-04, AT-03)", () => {
@@ -63,12 +65,27 @@ describe("publicPay (TRD-07, TRD-08, AT-05)", () => {
 describe("isStale (TRD-09)", () => {
   const fetched = new Date("2026-11-09T06:00:00Z");
 
-  it("is fresh within 26 hours", () => {
-    expect(isStale(fetched, new Date("2026-11-10T08:00:00Z"))).toBe(false);
+  // Collected every 6 hours (ADR 0006), so 8 hours means a run was missed.
+  it("is fresh within 8 hours", () => {
+    expect(isStale(fetched, new Date("2026-11-09T14:00:00Z"))).toBe(false);
   });
 
-  it("is stale after 26 hours", () => {
-    expect(isStale(fetched, new Date("2026-11-10T08:00:01Z"))).toBe(true);
+  it("is stale after 8 hours", () => {
+    expect(isStale(fetched, new Date("2026-11-09T14:00:01Z"))).toBe(true);
+  });
+});
+
+describe("update time and cadence (TRD-01, ADR 0006)", () => {
+  it("shows when the source built the figures, in UTC on a 24-hour clock", () => {
+    expect(formatUpdateTime(new Date("2026-11-18T12:07:54.850Z"))).toBe("12:07 UTC");
+    expect(formatUpdateTime(new Date("2026-11-18T00:05:00Z"))).toBe("00:05 UTC");
+    expect(formatUpdateTime(new Date("2026-11-18T18:59:59Z"))).toBe("18:59 UTC");
+  });
+
+  it("describes the schedule in words", () => {
+    expect(updateCadence()).toBe("every 6 hours");
+    expect(updateCadence(24)).toBe("every day");
+    expect(updateCadence(1)).toBe("every hour");
   });
 });
 

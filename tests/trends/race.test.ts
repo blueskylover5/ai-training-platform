@@ -111,7 +111,7 @@ describe("buildRaces (TRD-11)", () => {
       ["new", false],
       ["big-pay", false],
     ]);
-    expect(races[1].unavailableNote).toBe("Starts after the next daily update.");
+    expect(races[1].unavailableNote).toBe("Starts after the next update.");
     expect(races[1].entries).toEqual([]);
   });
 });

@@ -1,6 +1,6 @@
 # ADR 0004: Per-platform counts come from the AITraining.jobs job search
 
-- **Status:** Accepted
+- **Status:** Accepted; counted on every collection run since [ADR 0006](0006-collect-every-6-hours.md) (every 6 hours)
 - **Date:** 2026-11-12
 - **Design reference:** system design v3.1, §5 (`TRD-11`)
 
@@ -21,4 +21,4 @@ The platform race page ranks platforms three ways: open roles, new roles in the 
 - We never store or publish individual roles (`TRD-05`).
 - "Big pay" uses the top of each role's advertised range, so a role advertising $8 to $65 does not count but $40 to $120 does. The page says "advertised", never "earnings" (`TRD-07`).
 - Counts from the live search can differ slightly from `roles.json`, which is made earlier in the day. The race shows open roles from `roles.json` and the other two races from the search.
-- If AITraining.jobs changes or limits the job search, the two extra races go back to "starts after the next daily update", and the open-roles race keeps working.
+- If AITraining.jobs changes or limits the job search, the two extra races go back to "starts after the next update", and the open-roles race keeps working.
