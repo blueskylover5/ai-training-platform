@@ -29,6 +29,7 @@ Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, f
 - 15 November 2026: by the owner's decision, the contact section is shorter (#7). The "We can help with" list, the "Your account stays yours" box, the topic list and the rules confirmation are gone, so the form asks only for an email address, a message and, optionally, a name (`CON-02`, `CON-06`, `AT-15`).
 - The site is light only (black text on a white page) with a larger, roomier layout.
 - 18 November 2026: at the owner's request, trend figures are collected every 6 hours (00:30, 06:30, 12:30 and 18:30 UTC) by a schedule inside the app server. A later run on the same date replaces that date's figures with the newer file, the pages show the time of the figures, and the out-of-date notice appears after 8 hours (`TRD-01`, `TRD-09`, `TRD-11`, `AT-01`). See [ADR 0006](adr/0006-collect-every-6-hours.md).
+- 18 November 2026: at the owner's request, the contact section moved from the end of the Platform guide to its own **Contact us** page (`/contact`, #9). The menu and the home page link there, the guide has three parts again and ends with the same "Struggling with AI training?" box as the home page, and old `/platforms#contact` links land on `/contact` (`CON-01`).
 
 ### What changed in v3.1 (12 November 2026)
 
@@ -178,7 +179,8 @@ These files hold only the current day's figures. **Saving a copy every day build
 | **Overview** (menu: "Job market") | Open roles, live platforms, new roles in the last 7 days; new roles per week; top kinds of work by open roles |
 | **Kind of work** (one page each, for example "Law, Medicine & Finance") | Open roles over time, median and typical pay, number of platforms, a short team-written explanation of the work, links to matching team experts and jobs |
 | **Pay** | Median and typical range for every kind of work, side by side |
-| **Platforms** (a four-part guide; menu: "Platform guide") | Today's headline figures, then: **1. Platform status:** an animated leaderboard with three races (most open roles, most new roles in the last 7 days, most roles advertising $100+ an hour), the top 10 with ties at 10th, places gained or lost when you switch races, commentary written from the figures, and a link per race (`#race-new`). **2. Projects by sector:** open roles and share for each kind of work. **3. Pay:** advertised hourly pay by sector, and each platform's share of roles advertising $100+ an hour (platforms with at least 20 open roles). **4. Contact** (`CON-01` to `CON-06`). Change over time comes once history builds up |
+| **Platforms** (a three-part guide; menu: "Platform guide") | Today's headline figures, then: **1. Platform status:** an animated leaderboard with three races (most open roles, most new roles in the last 7 days, most roles advertising $100+ an hour), the top 10 with ties at 10th, places gained or lost when you switch races, commentary written from the figures, and a link per race (`#race-new`). **2. Projects by sector:** open roles and share for each kind of work. **3. Pay:** advertised hourly pay by sector, and each platform's share of roles advertising $100+ an hour (platforms with at least 20 open roles). It ends with a "Struggling with AI training?" box linking to the Contact us page. Change over time comes once history builds up |
+| **Contact us** (`/contact`; menu: "Contact us") | The general contact page (`CON-01` to `CON-06`): a heading and intro, "Prefer to chat?" with the Telegram and Discord buttons, and the "Send us a message" form. It shows no market data. Old `/platforms#contact` links land here |
 
 The **kind-of-work pages** are the main way experts arrive: a nurse searching "AI training jobs for nurses" should land on the right page, see real figures, and find a team expert from the same field.
 
@@ -267,11 +269,11 @@ The team agreement (Appendix B) is our main protection: the experts are our team
 
 ### General contact (before sign-in)
 
-Until expert matching launches, the Platforms page has a contact section for anyone who is struggling with AI training. It reaches our team in general, not a chosen expert, so it needs no sign-in. See [ADR 0005](adr/0005-public-contact-form.md).
+Until expert matching launches, the Contact us page (`/contact`) is there for anyone who is struggling with AI training. It reaches our team in general, not a chosen expert, so it needs no sign-in. See [ADR 0005](adr/0005-public-contact-form.md).
 
 | ID | Requirement |
 |---|---|
-| `CON-01` | The Platforms page has a contact section that anyone can use without signing in: an email form, plus Telegram and Discord links. It offers general help (choosing platforms, getting accepted, finding work, pay, using your field). It does not replace expert contact requests, which still need sign-in (`EXP-01`). |
+| `CON-01` | The Contact us page (`/contact`) has an email form, plus Telegram and Discord links, that anyone can use without signing in. The menu's "Contact us", the home page and the end of the Platform guide link to it. It offers general help (choosing platforms, getting accepted, finding work, pay, using your field). It does not replace expert contact requests, which still need sign-in (`EXP-01`). |
 | `CON-02` | The form asks for an email address, a message (20 to 1,000 characters) and, optionally, a name. The server checks every field again. Until 15 November 2026 it also asked for a topic from a fixed list and the same confirmation as `EXP-02`; the owner removed both (#7), and messages stored before then keep theirs. |
 | `CON-03` | Messages are stored on the server only and never shown on any public page. Until an email provider is chosen (§13), the team reads them with `npm run contact:list`, which neutralises control characters in visitor text before printing it. |
 | `CON-04` | At most 3 messages per network address per hour, and a hidden field turns bots away (`SEC-04`). The address is the one the hosting proxy recorded (a setting that must match the host), never one the visitor sends, and it is stored only as a hash mixed with a server secret. In production the server refuses to start without that secret (at least 32 characters). The count and the insert happen under a lock, so simultaneous messages cannot exceed the limit. |
