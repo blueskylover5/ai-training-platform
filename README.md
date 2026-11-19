@@ -51,6 +51,7 @@ One-time set-up:
    - `CRON_SECRET`: at least 16 characters.
    - `RESEND_API_KEY`: from [resend.com](https://resend.com) → **API Keys**. Open the Resend account with the address that should receive contact messages.
    - `CONTACT_NOTIFY_TO`: that address. Each contact message is emailed there (`CON-03`).
+   - `ADMIN_PASSWORD`: at least 12 characters. It opens the visitor log at `/admin/visits`, with the user name `admin` (`VIS-03`).
 3. Deploy. The first build stops with "DATABASE_URL is not set"; that is expected.
 4. In the project, open **Storage → Create Database → Neon**, choose the free plan and connect it to the project. This sets `DATABASE_URL` and `DATABASE_URL_UNPOOLED`.
 5. Open **Deployments**, then **Redeploy** the latest one. Its build creates the tables.
@@ -66,6 +67,11 @@ On Vercel:
 - **Deployments:** every push to `main` deploys the site. Other branches get preview deployments, which don't migrate the database and don't collect.
 - **Collection:** the schedule inside the app server stays off; `TRENDS_SCHEDULE=on` turns it back on.
 - **Raw copies** of downloaded files go into the `trend_raw_files` table instead of a folder.
+- **Visitor log:** Vercel adds each visitor's approximate location (country, region, city); in local development it shows as "Unknown".
+
+## Visitor log
+
+Every page view is recorded with its time, page, IP address, approximate location and browser, and kept without a time limit; the footer says so (`VIS-01` to `VIS-04`, [ADR 0008](docs/adr/0008-visitor-log.md)). Open `/admin/visits` to see it. The browser asks for the user name `admin` (or `ADMIN_USER`) and `ADMIN_PASSWORD`. While no password of at least 12 characters is set, the admin pages answer "not found". **Download all as CSV** on that page gives every visit as a spreadsheet.
 
 ## Scripts
 

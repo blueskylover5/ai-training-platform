@@ -1,4 +1,4 @@
-import { createHash, timingSafeEqual } from "node:crypto";
+import { matchesSecret } from "../secret-match";
 import type { CollectOutcome } from "./collect";
 
 /*
@@ -15,14 +15,9 @@ export interface CollectEndpointDeps {
   log?: (line: string) => void;
 }
 
-/**
- * True when the header is exactly "Bearer <secret>". Compares fixed-length hashes, so how long the
- * check takes says nothing about the secret.
- */
+/** True when the header is exactly "Bearer <secret>", compared in constant time. */
 export function bearerMatches(authorization: string | null, secret: string): boolean {
-  const expected = createHash("sha256").update(`Bearer ${secret}`).digest();
-  const given = createHash("sha256").update(authorization ?? "").digest();
-  return timingSafeEqual(expected, given);
+  return matchesSecret(authorization, `Bearer ${secret}`);
 }
 
 function reply(body: unknown, status: number): Response {

@@ -36,6 +36,13 @@
       "when": 1795061862169,
       "tag": "0004_trend_raw_files",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795063079601,
+      "tag": "0005_site_visits",
+      "breakpoints": true
     }
   ]
 }

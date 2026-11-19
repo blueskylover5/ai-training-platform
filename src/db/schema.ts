@@ -173,3 +173,27 @@ export const contactMessages = pgTable(
   },
   (t) => [index("contact_messages_address_created_idx").on(t.addressHash, t.createdAt)],
 );
+
+/**
+ * The visitor log (VIS-01 to VIS-04, ADR 0008): one row per page view, kept without a time limit at
+ * the owner's decision. Shown only to the owner on /admin/visits, behind a password.
+ */
+export const siteVisits = pgTable(
+  "site_visits",
+  {
+    id: serial("id").primaryKey(),
+    visitedAt: timestamp("visited_at", { withTimezone: true }).notNull().defaultNow(),
+    /** The page's path, without query or #hash. */
+    path: text("path").notNull(),
+    /** The visitor's IP address as the hosting proxy recorded it; empty when unknown. */
+    ip: text("ip"),
+    /** Approximate location of the IP address, from the host (Vercel): country code, region code, city. */
+    country: text("country"),
+    region: text("region"),
+    city: text("city"),
+    userAgent: text("user_agent"),
+    /** The other site a visit came from; only on the first page of a visit. */
+    referrer: text("referrer"),
+  },
+  (t) => [index("site_visits_visited_at_idx").on(t.visitedAt), index("site_visits_ip_visited_at_idx").on(t.ip, t.visitedAt)],
+);

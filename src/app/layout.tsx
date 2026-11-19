@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
-import { siteConfig, trendsConfig } from "@/config";
+import { siteConfig, trendsConfig, visitConfig } from "@/config";
 import { MainNav } from "./_components/main-nav";
 import { pageWidth } from "./_components/page-width";
+import { VisitTracker } from "./_components/visit-tracker";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -42,8 +43,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <a href={credit.licenseUrl}>{credit.license}</a>. We publish summaries only, not individual roles, and
               are not affiliated with AITraining.jobs or any hiring platform.
             </p>
+            {/* VIS-02: visitors are told that their visits are logged. */}
+            <p className="mt-3 max-w-3xl">
+              We log each visit to this site: the time, the page, your IP address, its approximate location and your
+              browser.
+            </p>
           </div>
         </footer>
+        <VisitTracker endpoint={visitConfig.endpointPath} />
       </body>
     </html>
   );
