@@ -202,6 +202,9 @@ export const visitConfig = {
 
 /** The home page (19 November 2026). Its words and images are in src/content/landing.ts. */
 export const landingConfig = {
-  /** How long each hero slide shows before the next, unless the visitor pauses or hovers. */
-  sliderIntervalMs: 6_000,
+  /**
+   * How long each hero background photo shows before fading into the next. Visitors who ask for
+   * less motion see the first photo only.
+   */
+  heroBackgroundIntervalMs: 7_000,
 } as const;

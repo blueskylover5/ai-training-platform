@@ -2,17 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { contactConfig, landingConfig } from "@/config";
 import { contactChannels } from "@/contact/channels";
-import { challenges, heroSlides, platforms, type Challenge, type PlatformMark } from "@/content/landing";
+import { challenges, heroBackgrounds, platforms, type Challenge, type PlatformMark } from "@/content/landing";
 import { updateCadence } from "@/trends/present";
 import { TelegramIcon } from "./_components/brand-icons";
 import { ChatChannels, hasChatChannels } from "./_components/chat-channels";
-import { HeroSlider } from "./_components/hero-slider";
+import { HeroBackdrop } from "./_components/hero-backdrop";
 import { pageWidth } from "./_components/page-width";
 
 /*
  * The home page (19 November 2026): ATRE helps people who are stuck on AI training work. The job
- * market figures moved to /market. Words and images for the slider, challenges and platforms are
- * in src/content/landing.ts.
+ * market figures moved to /market. Images for the hero background, the challenges and the
+ * platforms are in src/content/landing.ts.
  */
 
 /** Real situations people bring to us, in the owner's words; the list ends with "…" on purpose. */
@@ -38,6 +38,7 @@ export default function Home() {
   return (
     <main className="flex-1">
       <Hero />
+      <WhoWeHelp />
       <Challenges />
       <Platforms />
       {hasChatChannels() && <ChatBand />}
@@ -46,45 +47,64 @@ export default function Home() {
   );
 }
 
+/** The headline over a background slideshow of photos (owner's request, 19 November 2026). */
 function Hero() {
-  const { telegram } = contactChannels(contactConfig);
   return (
     <section
       aria-labelledby="hero-title"
-      className="bg-brand-deep bg-[radial-gradient(ellipse_at_top_right,rgba(79,70,229,0.55),transparent_60%)] text-white"
+      className="relative isolate flex min-h-[30rem] items-center bg-brand-deep text-white sm:min-h-[36rem] lg:min-h-[42rem]"
     >
-      <div
-        className={`${pageWidth} grid grid-cols-1 gap-12 py-14 sm:py-20 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-14 lg:py-24`}
-      >
-        <div>
-          <p className="text-sm font-semibold tracking-widest text-accent uppercase">AI Training Resolution Expert</p>
-          <h1
-            id="hero-title"
-            className="mt-4 max-w-3xl text-4xl leading-[1.1] font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl"
-          >
-            Stuck on an AI training project? We&apos;ll get you through it.
-          </h1>
+      <HeroBackdrop images={heroBackgrounds} intervalMs={landingConfig.heroBackgroundIntervalMs} />
+      <div className={`${pageWidth} relative py-20 sm:py-24`}>
+        <p className="text-sm font-semibold tracking-widest text-accent uppercase">AI Training Resolution Expert</p>
+        <h1
+          id="hero-title"
+          className="mt-4 max-w-3xl text-4xl leading-[1.1] font-bold tracking-tight text-balance sm:text-6xl lg:text-7xl"
+        >
+          Stuck on an AI training project? We&apos;ll get you through it.
+        </h1>
+      </div>
+    </section>
+  );
+}
 
-          <h2 className="mt-10 text-lg font-semibold">Who is this for?</h2>
-          <ul role="list" className="mt-4 max-w-3xl space-y-3">
+/** "Who is this for?" and "What we do", in their own section below the hero (owner's request). */
+function WhoWeHelp() {
+  const { telegram } = contactChannels(contactConfig);
+  return (
+    <section aria-labelledby="who-title" className="bg-brand-wash py-16 sm:py-24">
+      <div className={`${pageWidth} grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-start lg:gap-14`}>
+        <div>
+          <h2 id="who-title" className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+            Who is this for?
+          </h2>
+          <ul role="list" className="mt-8 space-y-4">
             {whoFor.map((item, i) => (
-              <li key={i} className="flex gap-3 text-base leading-7 text-brand-soft sm:text-lg sm:leading-8">
-                <span aria-hidden="true" className="mt-3 size-2 shrink-0 rounded-full bg-accent" />
+              <li
+                key={i}
+                className="flex gap-4 rounded-2xl bg-surface p-5 text-base leading-7 text-ink-2 shadow-[0_1px_2px_rgba(11,11,11,0.05)] sm:text-lg sm:leading-8"
+              >
+                <span aria-hidden="true" className="mt-2.5 size-2.5 shrink-0 rounded-full bg-brand sm:mt-3" />
                 <span>{item}</span>
               </li>
             ))}
-            <li className="pl-5 text-lg text-brand-soft" aria-label="and many more situations like these">
+            <li className="pl-5 text-2xl leading-none text-brand" aria-label="and many more situations like these">
               …
             </li>
           </ul>
+        </div>
 
-          <h2 className="mt-10 text-lg font-semibold">What we do</h2>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-brand-soft sm:text-lg sm:leading-8">
+        <div className="rounded-3xl bg-brand-deep p-7 text-white sm:p-10">
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">What we do</h2>
+          <p className="mt-4 text-lg leading-8 text-brand-soft">
             Tell us where you&apos;re stuck. Someone who knows these projects looks at your situation and works through
             it with you, step by step, until you have a complete solution and can get back to earning.
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
-            <Link href="/contact" className={`${primaryButton} bg-accent text-brand-deep hover:brightness-105 focus-visible:outline-white`}>
+          <div className="mt-8 flex flex-col items-start gap-5">
+            <Link
+              href="/contact"
+              className={`${primaryButton} w-full justify-center bg-accent text-center text-brand-deep hover:brightness-105 focus-visible:outline-white sm:w-auto`}
+            >
               Tell us where you&apos;re stuck →
             </Link>
             {telegram && (
@@ -99,9 +119,6 @@ function Hero() {
               </a>
             )}
           </div>
-        </div>
-        <div className="lg:pt-10">
-          <HeroSlider slides={heroSlides} intervalMs={landingConfig.sliderIntervalMs} />
         </div>
       </div>
     </section>

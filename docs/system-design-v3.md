@@ -34,7 +34,7 @@ Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, f
 - 19 November 2026: at the owner's request, each contact message is also emailed to the owner through Resend, with the visitor's address as Reply-To (`CON-03`). See the amendment to [ADR 0005](adr/0005-public-contact-form.md).
 - 19 November 2026: by the owner's decision, the site keeps a **visitor log**: each page view with its time, page, IP address, approximate location and browser, kept without a time limit, shown only on a password-protected admin page. The footer tells visitors (`VIS-01` to `VIS-04`, §10). See [ADR 0008](adr/0008-visitor-log.md).
 - 19 November 2026: at the owner's request, the site has no footer. The data credit line now sits under the headline figures on the home page and the Platform guide, as it already did under every chart (`TRD-04`). The notice that visits are logged went with the footer (`VIS-02`).
-- 19 November 2026: the product is named **AI Training Resolution Expert (ATRE)**, and "ATRE" is its logo and favicon. The site has brand colours (indigo with amber highlights). The home page now speaks to people who are stuck on AI training work: who it is for, what we do, an image slider, "Are you facing these challenges?", the platforms we help with and the chat channels. The job market overview moved to `/market` (menu: "Job market").
+- 19 November 2026: the product is named **AI Training Resolution Expert (ATRE)**, and "ATRE" is its logo and favicon. The site has brand colours (indigo with amber highlights). The home page now speaks to people who are stuck on AI training work: a headline over a background slideshow of photos, then a section with who it is for and what we do, "Are you facing these challenges?", the platforms we help with and the chat channels. The job market overview moved to `/market` (menu: "Job market").
 
 ### What changed in v3.1 (12 November 2026)
 
@@ -181,7 +181,7 @@ These files hold only the current day's figures. **Saving a copy every day build
 
 | Page | Shows |
 |---|---|
-| **Home** (`/`) | Who ATRE is for, with real examples; what we do; a button to Contact us; an image slider; "Are you facing these challenges?" with a photo per challenge; the platforms we help with (names and logos, no links); Telegram and Discord |
+| **Home** (`/`) | A headline over a background slideshow of photos (still for visitors who ask for less motion); then who ATRE is for, with real examples, and what we do, with a button to Contact us; "Are you facing these challenges?" with a photo per challenge; the platforms we help with (names and logos, no links); Telegram and Discord |
 | **Overview** (`/market`; menu: "Job market") | Open roles, live platforms, new roles in the last 7 days; new roles per week; top kinds of work by open roles |
 | **Kind of work** (one page each, for example "Law, Medicine & Finance") | Open roles over time, median and typical pay, number of platforms, a short team-written explanation of the work, links to matching team experts and jobs |
 | **Pay** | Median and typical range for every kind of work, side by side |

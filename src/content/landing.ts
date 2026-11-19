@@ -1,43 +1,26 @@
 /*
  * What the home page shows (19 November 2026). Images live in /public/images; while a `src` is
  * null, a coloured panel stands in, so the owner's photos can drop in without layout changes.
- * Recommended sizes: hero slides 1600 × 1200 (4:3), challenge photos 1200 × 900 (4:3), platform
- * logos as SVG or PNG about 240 × 80 on a transparent background.
+ * Recommended sizes: hero backgrounds 2400 × 1350 (16:9, landscape, JPG), challenge photos
+ * 1200 × 900 (4:3), platform logos as SVG or PNG about 240 × 80 on a transparent background.
  */
 
-export interface HeroSlide {
-  /** For example "/images/hero/slide-1.jpg"; null shows the coloured panel. */
+export interface HeroBackground {
+  /** For example "/images/hero/hero-1.jpg"; null shows the coloured panel. */
   src: string | null;
-  /** Describes the photo for people who can't see it. */
-  alt: string;
-  title: string;
-  text: string;
   /** The panel's gradient while there is no photo (Tailwind classes). */
   panel: string;
 }
 
-export const heroSlides: HeroSlide[] = [
-  {
-    src: null,
-    alt: "Someone reading reviewer feedback on a laptop, relieved.",
-    title: "From “too simple” to accepted",
-    text: "Find out what reviewers actually look for.",
-    panel: "from-brand to-[#7c3aed]",
-  },
-  {
-    src: null,
-    alt: "Someone at a desk, passing an online assessment.",
-    title: "From failed attempt to passed",
-    text: "See where your attempts go wrong, and fix it.",
-    panel: "from-[#0e7490] to-brand",
-  },
-  {
-    src: null,
-    alt: "Someone smiling at a laptop after finishing a hard task.",
-    title: "From stuck to earning again",
-    text: "Step-by-step help until it's solved.",
-    panel: "from-[#b45309] to-[#be185d]",
-  },
+/**
+ * The hero's background slideshow: the photos fade into one another behind the headline. They are
+ * decoration (the headline says it all), so they have no descriptions. A dark layer on top keeps
+ * the white text readable over any photo.
+ */
+export const heroBackgrounds: HeroBackground[] = [
+  { src: null, panel: "from-brand to-[#7c3aed]" },
+  { src: null, panel: "from-[#0e7490] to-brand" },
+  { src: null, panel: "from-[#b45309] to-[#be185d]" },
 ];
 
 export interface Challenge {

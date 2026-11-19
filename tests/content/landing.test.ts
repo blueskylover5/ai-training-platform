@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { landingConfig } from "../../src/config";
-import { challenges, heroSlides, platforms } from "../../src/content/landing";
+import { challenges, heroBackgrounds, platforms } from "../../src/content/landing";
 
 /** An image path must be under /images and the file must be in /public, so a typo never ships a broken picture. */
 function expectImage(src: string | null) {
@@ -11,15 +11,14 @@ function expectImage(src: string | null) {
 }
 
 describe("home page content (19 November 2026)", () => {
-  it("gives every slide a title, a line and a description of its photo", () => {
-    expect(heroSlides.length).toBeGreaterThanOrEqual(2);
-    for (const slide of heroSlides) {
-      expect(slide.title.trim()).not.toBe("");
-      expect(slide.text.trim()).not.toBe("");
-      expect(slide.alt.trim().length).toBeGreaterThan(10);
-      expectImage(slide.src);
+  it("has several hero background photos, each with a stand-in panel", () => {
+    expect(heroBackgrounds.length).toBeGreaterThanOrEqual(2);
+    for (const background of heroBackgrounds) {
+      expect(background.panel.trim()).not.toBe("");
+      expectImage(background.src);
     }
-    expect(new Set(heroSlides.map((s) => s.title)).size).toBe(heroSlides.length);
+    const photos = heroBackgrounds.flatMap((b) => (b.src ? [b.src] : []));
+    expect(new Set(photos).size).toBe(photos.length);
   });
 
   it("gives every challenge a title, a line and a description of its photo", () => {
@@ -37,7 +36,7 @@ describe("home page content (19 November 2026)", () => {
     for (const platform of platforms) expectImage(platform.logo);
   });
 
-  it("gives each slide time to be read", () => {
-    expect(landingConfig.sliderIntervalMs).toBeGreaterThanOrEqual(5_000);
+  it("changes the hero background slowly", () => {
+    expect(landingConfig.heroBackgroundIntervalMs).toBeGreaterThanOrEqual(5_000);
   });
 });
