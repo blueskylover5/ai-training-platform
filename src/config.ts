@@ -6,6 +6,8 @@ export const siteConfig = {
   /** The product name, decided by the owner on 19 November 2026 (§13). "ATRE" is also the logo. */
   name: "AI Training Resolution Expert",
   shortName: "ATRE",
+  /** The site's own domain, set up on Vercel on 19 November 2026; ai-solver.support redirects here. */
+  url: "https://www.ai-solver.support",
   description:
     "Stuck on an AI training project? ATRE helps you get past rejected tasks, failed assessments and hard prompts, and back to earning. Plus live figures on AI training work.",
 } as const;
@@ -15,8 +17,8 @@ export const trendsConfig = {
     roles: "https://aitraining.jobs/roles.json",
     pay: "https://aitraining.jobs/pay.json",
   },
-  /** Identifies us to the data source. Add a contact address once the product domain exists. */
-  userAgent: process.env.TRENDS_USER_AGENT ?? "ai-training-platform-trends/0.1",
+  /** Identifies us to the data source, with our site's address so they can see who is reading. */
+  userAgent: process.env.TRENDS_USER_AGENT ?? "ai-training-platform-trends/0.1 (+https://www.ai-solver.support)",
   fetchTimeoutMs: 30_000,
   fetchAttempts: 3,
   retryDelayMs: 30_000,
