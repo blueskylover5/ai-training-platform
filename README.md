@@ -71,7 +71,7 @@ On Vercel:
 
 ## Visitor log
 
-Every page view is recorded with its time, page, IP address, approximate location and browser, and kept without a time limit; the footer says so (`VIS-01` to `VIS-04`, [ADR 0008](docs/adr/0008-visitor-log.md)). Open `/admin/visits` to see it. The browser asks for the user name `admin` (or `ADMIN_USER`) and `ADMIN_PASSWORD`. While no password of at least 12 characters is set, the admin pages answer "not found". **Download all as CSV** on that page gives every visit as a spreadsheet.
+Every page view is recorded with its time, page, IP address, approximate location and browser, and kept without a time limit (`VIS-01` to `VIS-04`, [ADR 0008](docs/adr/0008-visitor-log.md)). Open `/admin/visits` to see it. The browser asks for the user name `admin` (or `ADMIN_USER`) and `ADMIN_PASSWORD`. While no password of at least 12 characters is set, the admin pages answer "not found". **Download all as CSV** on that page gives every visit as a spreadsheet.
 
 ## Scripts
 

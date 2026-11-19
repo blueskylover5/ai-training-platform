@@ -17,6 +17,7 @@ import { getPlatformGuide, type PlatformGuideData, type PlatformRaceData } from 
 import { buildRaces, toBoard } from "@/trends/race";
 import { ChartCard, DataExtras, DataTable } from "../_components/chart-card";
 import { BarList } from "../_components/charts";
+import { Credit } from "../_components/credit";
 import { ContactTeaser } from "../_components/contact-teaser";
 import { NoDataYet, StaleNotice } from "../_components/notices";
 import { pageWidth } from "../_components/page-width";
@@ -191,6 +192,7 @@ function AtAGlance({ guide, stale }: { guide: PlatformGuideData; stale: boolean 
             </div>
           ))}
         </dl>
+        <Credit dataDate={totals.dataDate} className="mt-4" />
       </div>
     </section>
   );

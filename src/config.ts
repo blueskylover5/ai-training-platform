@@ -169,8 +169,8 @@ export const storageConfig = {
 
 /**
  * The visitor log (VIS-01 to VIS-04, ADR 0008). The owner decided on 19 November 2026 to record each
- * page view with the visitor's IP address and keep the records without a time limit; the footer
- * says so. The records are shown only on the admin page, behind ADMIN_PASSWORD.
+ * page view with the visitor's IP address and keep the records without a time limit. The footer
+ * notice went with the footer the same day (VIS-02). The records are shown only on the admin page, behind ADMIN_PASSWORD.
  */
 export const visitConfig = {
   /** Where each page reports its view. */
