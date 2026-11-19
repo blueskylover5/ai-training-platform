@@ -1,11 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { contactConfig, landingConfig } from "@/config";
-import { contactChannels } from "@/contact/channels";
+import { landingConfig } from "@/config";
 import { challenges, heroBackgrounds, platforms, type Challenge, type PlatformMark } from "@/content/landing";
 import { updateCadence } from "@/trends/present";
-import { TelegramIcon } from "./_components/brand-icons";
-import { ChatChannels, hasChatChannels } from "./_components/chat-channels";
 import { HeroBackdrop } from "./_components/hero-backdrop";
 import { HeroCta } from "./_components/hero-cta";
 import { pageWidth } from "./_components/page-width";
@@ -42,7 +39,7 @@ export default function Home() {
       <WhoWeHelp />
       <Challenges />
       <Platforms />
-      {hasChatChannels() && <ChatBand />}
+      {/* The Telegram and Discord buttons are on Contact us only (owner's request, 19 November 2026). */}
       <MarketPointer />
     </main>
   );
@@ -72,7 +69,6 @@ function Hero() {
 
 /** "Who is this for?" and "What we do", in their own section below the hero (owner's request). */
 function WhoWeHelp() {
-  const { telegram } = contactChannels(contactConfig);
   return (
     <section aria-labelledby="who-title" className="bg-brand-wash py-16 sm:py-24">
       <div className={`${pageWidth} grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-start lg:gap-14`}>
@@ -102,25 +98,12 @@ function WhoWeHelp() {
             Tell us where you&apos;re stuck. Someone who knows these projects looks at your situation and works through
             it with you, step by step, until you have a complete solution and can get back to earning.
           </p>
-          <div className="mt-8 flex flex-col items-start gap-5">
-            <Link
-              href="/contact"
-              className="inline-flex w-full items-center justify-center rounded-full bg-accent px-6 py-3.5 text-center text-base font-semibold text-brand-deep hover:no-underline hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto sm:px-7 sm:text-lg"
-            >
-              Tell us where you&apos;re stuck&nbsp;→
-            </Link>
-            {telegram && (
-              <a
-                href={telegram.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 font-semibold text-white hover:text-brand-soft"
-              >
-                <TelegramIcon className="size-6" />
-                or message us on Telegram
-              </a>
-            )}
-          </div>
+          <Link
+            href="/contact"
+            className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-accent px-6 py-3.5 text-center text-base font-semibold text-brand-deep hover:no-underline hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto sm:px-7 sm:text-lg"
+          >
+            Tell us where you&apos;re stuck&nbsp;→
+          </Link>
         </div>
       </div>
     </section>
@@ -220,28 +203,6 @@ function PlatformBadge({ platform }: { platform: PlatformMark }) {
       )}
       {platform.name}
     </li>
-  );
-}
-
-function ChatBand() {
-  return (
-    <section aria-labelledby="chat-title" className="py-16 sm:py-20">
-      <div className={`${pageWidth} flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between`}>
-        <div className="max-w-2xl">
-          <h2 id="chat-title" className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-            Prefer to chat?
-          </h2>
-          <p className="mt-3 text-lg leading-8 text-ink-2">
-            Message us on Telegram or Discord, or{" "}
-            <Link href="/contact" className="font-semibold">
-              send us a message
-            </Link>{" "}
-            and we&apos;ll reply by email.
-          </p>
-        </div>
-        <ChatChannels />
-      </div>
-    </section>
   );
 }
 

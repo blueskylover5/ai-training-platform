@@ -53,7 +53,7 @@ export const challenges: Challenge[] = [
     alt: "A woman at a laptop with her hand on her head, worried.",
     emoji: "📝",
     title: "You can’t pass the assessment",
-    text: "You failed the qualification test or “Attempt 2”, and there may be only one try left.",
+    text: "You failed the qualification test, and there may be only one try left.",
   },
   {
     key: "stump",
