@@ -1,6 +1,6 @@
 # ADR 0008: A visitor log with IP addresses, for the owner only
 
-- **Status:** Accepted, amended 2026-11-19 (no footer notice; see the amendment at the end)
+- **Status:** Accepted, amended 2026-11-19 (no footer notice; deleting visits; see the amendments at the end)
 - **Date:** 2026-11-19
 - **Design reference:** system design v3.2, §10 (`VIS-01` to `VIS-04`, `SEC-05`)
 
@@ -51,3 +51,17 @@ The owner asked for the footer to be removed, and with it the line "We log each 
 - The data credit that was also in the footer now sits under the headline figures on the home page and the Platform guide, as it already did under every chart (`TRD-04`).
 
 Consequence: the site no longer tells visitors that their IP address is logged. In the EU and some other places, visitors must be told about personal data when it is collected, so until the privacy policy (§13) says it, the log is collected without the notice the law expects. The privacy policy is therefore more urgent, and when it exists, a link to it should go back on every page.
+
+## Amendment (2026-11-19): selecting and deleting visits
+
+At the owner's request, the visit list on `/admin/visits` can be cleaned up.
+
+- **Selecting:** each visit has a checkbox, and Shift-click selects a range. The header box selects the whole page. When there are more visits than one page holds, "Select all N visits" selects every visit in the log.
+- **Deleting:** "Delete N visits" asks for confirmation ("This can't be undone"), then deletes and shows the page again with the new totals.
+- **Protection:**
+  - The delete action is a Server Action on the same page, so `proxy.ts` asks for the admin password first. The action checks it again (`deleteVisitsAsAdmin`), because Server Actions can be called directly.
+  - Next.js refuses action calls from other sites (it compares Origin with Host).
+  - A request names at most 500 visits; "all visits" is sent as such.
+  - Each deletion is written to the server log with the visit ids, until the admin module's audit log exists (`SEC-07`).
+
+Consequence: the owner can now honour a deletion request from the page itself, without a database query. The list has no search yet, so finding one person's visits means paging through or downloading the CSV.

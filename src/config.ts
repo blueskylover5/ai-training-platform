@@ -197,6 +197,8 @@ export const visitConfig = {
     pageSize: 100,
     /** How many pages and countries the summary lists. */
     topCount: 10,
+    /** Most visits one delete request may name; "all visits" is sent as such, not as a list. */
+    maxDeleteIds: 500,
   },
 } as const;
 
