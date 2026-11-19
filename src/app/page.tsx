@@ -16,6 +16,7 @@ import { getTrendsOverview, type TotalsFigures, type TrendsOverview } from "@/tr
 import { ChartCard, DataTable } from "./_components/chart-card";
 import { ContactTeaser } from "./_components/contact-teaser";
 import { BarList, WeeklyColumns } from "./_components/charts";
+import { Credit } from "./_components/credit";
 import { NoDataYet, StaleNotice } from "./_components/notices";
 import { pageWidth } from "./_components/page-width";
 import { PayBySectorCard } from "./_components/pay-by-sector-card";
@@ -96,6 +97,7 @@ function Headline({
           );
         })}
       </dl>
+      <Credit dataDate={totals.dataDate} className="mt-4" />
     </section>
   );
 }

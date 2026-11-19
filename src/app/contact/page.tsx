@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 /** The Contact us page (CON-01 to CON-06). No market data, so it never reads the trends tables. */
 export default function ContactPage() {
   return (
-    // The grey runs down to the footer, however tall the window.
+    // The grey runs down to the bottom of the window, however tall it is.
     <main className="flex-1 bg-tint">
       <ContactSection />
     </main>

@@ -1,6 +1,6 @@
 # ADR 0008: A visitor log with IP addresses, for the owner only
 
-- **Status:** Accepted
+- **Status:** Accepted, amended 2026-11-19 (no footer notice; see the amendment at the end)
 - **Date:** 2026-11-19
 - **Design reference:** system design v3.2, §10 (`VIS-01` to `VIS-04`, `SEC-05`)
 
@@ -42,3 +42,12 @@ IP addresses count as personal data in many places (in the EU under the GDPR, fo
   - Locally, location shows as "Unknown", because only Vercel adds it.
 - **Storage:** one small row per page view, so even thousands a day stay well within Neon's free plan for a long time. The CSV download loads all visits at once, which will need paging once there are hundreds of thousands.
 - **Password:** HTTP Basic sends the password with every admin request. That is safe over HTTPS, which Vercel always uses. There is no lockout after wrong guesses, so `ADMIN_PASSWORD` should be long and random.
+
+## Amendment (2026-11-19): no notice on the site
+
+The owner asked for the footer to be removed, and with it the line "We log each visit to this site: the time, the page, your IP address, its approximate location and your browser."
+
+- The visitor log itself is unchanged (`VIS-01`, `VIS-03`, `VIS-04`).
+- The data credit that was also in the footer now sits under the headline figures on the home page and the Platform guide, as it already did under every chart (`TRD-04`).
+
+Consequence: the site no longer tells visitors that their IP address is logged. In the EU and some other places, visitors must be told about personal data when it is collected, so until the privacy policy (§13) says it, the log is collected without the notice the law expects. The privacy policy is therefore more urgent, and when it exists, a link to it should go back on every page.

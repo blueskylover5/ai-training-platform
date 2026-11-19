@@ -33,6 +33,7 @@ Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, f
 - 19 November 2026: the site is hosted on Vercel (free plan) with a Neon Postgres database. On Vercel, a Vercel Schedule calls a protected address every 6 hours instead of the schedule inside the app server, and raw copies of downloaded files are kept in the database (`TRD-01`). See [ADR 0007](adr/0007-host-on-vercel.md).
 - 19 November 2026: at the owner's request, each contact message is also emailed to the owner through Resend, with the visitor's address as Reply-To (`CON-03`). See the amendment to [ADR 0005](adr/0005-public-contact-form.md).
 - 19 November 2026: by the owner's decision, the site keeps a **visitor log**: each page view with its time, page, IP address, approximate location and browser, kept without a time limit, shown only on a password-protected admin page. The footer tells visitors (`VIS-01` to `VIS-04`, §10). See [ADR 0008](adr/0008-visitor-log.md).
+- 19 November 2026: at the owner's request, the site has no footer. The data credit line now sits under the headline figures on the home page and the Platform guide, as it already did under every chart (`TRD-04`). The notice that visits are logged went with the footer (`VIS-02`).
 
 ### What changed in v3.1 (12 November 2026)
 
@@ -371,7 +372,7 @@ The owner decided on 19 November 2026 to log each visit with the visitor's IP ad
 | ID | Requirement |
 |---|---|
 | `VIS-01` | Each page view is recorded: the time (UTC), the page's path, the visitor's IP address as the hosting proxy recorded it, its approximate location from the host (country, region, city), the browser (user agent), and the other site the visit came from on its first page. The page reports the view with a small script, so visitors without JavaScript, including most crawlers, are not recorded. Admin pages are not recorded. |
-| `VIS-02` | The records are kept without a time limit. The footer of every page says that visits are logged and what is recorded. |
+| `VIS-02` | The records are kept without a time limit. The footer said that visits are logged until the owner removed the footer on 19 November 2026; the site no longer tells visitors, so the privacy policy (§13) must say it before launch. |
 | `VIS-03` | Only the owner sees the records, on `/admin/visits`: totals, the top pages and countries of the last 7 days, every visit newest first, and a CSV download of all visits. The admin pages ask for a user name and password (`ADMIN_USER`, `ADMIN_PASSWORD`) and answer "not found" while no password of at least 12 characters is set. |
 | `VIS-04` | Only the site's own pages can report a view (browsers that say a request comes from another site are refused), and at most 30 views per IP address per minute are recorded. |
 
