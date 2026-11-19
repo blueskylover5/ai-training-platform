@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
-  { href: "/", label: "Job market" },
+  { href: "/market", label: "Job market" },
   { href: "/platforms", label: "Platform guide" },
 ] as const;
 
@@ -31,7 +31,7 @@ export function MainNav() {
       <Link
         href="/contact"
         aria-current={pathname === "/contact" ? "page" : undefined}
-        className={`rounded-full bg-ink px-5 py-2 font-semibold text-page hover:opacity-90 ${
+        className={`rounded-full bg-brand px-5 py-2 font-semibold text-white hover:opacity-90 ${
           pathname === "/contact" ? "underline decoration-2 underline-offset-4" : "hover:no-underline"
         }`}
       >

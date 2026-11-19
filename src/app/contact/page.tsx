@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     // The grey runs down to the bottom of the window, however tall it is.
-    <main className="flex-1 bg-tint">
+    <main className="flex-1 bg-brand-wash">
       <ContactSection />
     </main>
   );

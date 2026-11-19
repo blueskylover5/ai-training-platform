@@ -155,7 +155,7 @@ function ContactFormRound({ settings, onAnother }: { settings: ContactFormSettin
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex h-14 items-center justify-center rounded-full bg-ink px-8 text-lg font-semibold text-page transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+          className="inline-flex h-14 items-center justify-center rounded-full bg-brand px-8 text-lg font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
         >
           {pending ? "Sending…" : "Send message"}
         </button>

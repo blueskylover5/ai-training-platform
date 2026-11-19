@@ -48,7 +48,7 @@ export function DiscordHandle({ username, profileUrl, icon }: { username: string
         type="button"
         onClick={copy}
         aria-label={`Copy the Discord username ${username}`}
-        className="ml-auto inline-flex h-9 items-center rounded-full border border-line-strong px-4 text-sm font-semibold text-ink hover:border-ink"
+        className="ml-auto inline-flex h-9 items-center rounded-full border border-line-strong px-4 text-sm font-semibold text-ink hover:border-brand"
       >
         {state === "copied" ? "Copied" : state === "selected" ? "Selected" : "Copy"}
       </button>

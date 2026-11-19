@@ -3,10 +3,11 @@
  */
 
 export const siteConfig = {
-  /** Working names until the product name is decided (spec §13). */
-  name: "AI Training Opportunity & Expert Support Platform",
-  shortName: "AI Training Platform",
-  description: "Trends for AI training work, updated several times a day: open roles, kinds of work, advertised pay and platforms. Free.",
+  /** The product name, decided by the owner on 19 November 2026 (§13). "ATRE" is also the logo. */
+  name: "AI Training Resolution Expert",
+  shortName: "ATRE",
+  description:
+    "Stuck on an AI training project? ATRE helps you get past rejected tasks, failed assessments and hard prompts, and back to earning. Plus live figures on AI training work.",
 } as const;
 
 export const trendsConfig = {
@@ -144,7 +145,7 @@ export const contactConfig = {
   email: {
     apiUrl: "https://api.resend.com/emails",
     to: process.env.CONTACT_NOTIFY_TO?.trim() || null,
-    from: process.env.CONTACT_NOTIFY_FROM?.trim() || "AI Training Platform <onboarding@resend.dev>",
+    from: process.env.CONTACT_NOTIFY_FROM?.trim() || "ATRE <onboarding@resend.dev>",
     subjectMaxChars: 80,
     timeoutMs: 10_000,
   },
@@ -197,4 +198,10 @@ export const visitConfig = {
     /** How many pages and countries the summary lists. */
     topCount: 10,
   },
+} as const;
+
+/** The home page (19 November 2026). Its words and images are in src/content/landing.ts. */
+export const landingConfig = {
+  /** How long each hero slide shows before the next, unless the visitor pauses or hovers. */
+  sliderIntervalMs: 6_000,
 } as const;

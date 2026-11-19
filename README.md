@@ -1,13 +1,13 @@
-# AI Training Opportunity & Expert Support Platform
+# ATRE: AI Training Resolution Expert
 
-A free service with two parts:
+A free service for people who are stuck on AI training work: rejected tasks, failed assessments, prompts that are too easy. It has two parts:
 
 - **Trends:** charts and figures showing the AI training job market (open roles, growth and advertised pay by kind of work), built from AITraining.jobs open data. They help experts see where their skills are in demand.
 - **Experts:** a directory of our own team members who have done AI training work. Members send a contact request, and the conversation continues by chat or meeting.
 
 The product baseline is [docs/system-design-v3.md](docs/system-design-v3.md). Architecture decisions are in [docs/adr](docs/adr).
 
-**Status:** Phase 1 (Trends) is in development. Collection every 6 hours, the trends overview page, the Platforms guide (platform race, sectors and pay) and the Contact us page work; separate chart pages and share images are next.
+**Status:** Phase 1 (Trends) is in development. The home page, collection every 6 hours, the job market page, the Platforms guide (platform race, sectors and pay) and the Contact us page work; separate chart pages and share images are next.
 
 ## Stack
 
@@ -30,7 +30,7 @@ npm run db:migrate       # create the local database in .data/pglite
 npm run dev              # http://localhost:3000; collects the figures by itself (see below)
 ```
 
-The home page shows the trends overview from the newest published figures. `/platforms` shows the Platforms guide: the platform race, projects by sector and pay. `/contact` is the Contact us page with the contact form (`CON-01`). The figures update themselves: the app server collects them at 00:30, 06:30, 12:30 and 18:30 UTC, and about 30 seconds after it starts if it missed one (`TRD-01`, [ADR 0006](docs/adr/0006-collect-every-6-hours.md)). A run takes 2 to 3 minutes, most of it spent on gently paced per-platform searches (`TRD-11`). A later run on the same day replaces that day's figures with the newer file, so the history keeps one point per day. To collect with a cron job instead, set `TRENDS_SCHEDULE=off` and run `npm run trends:collect`, or call `/api/trends/collect` (see [Deploying to Vercel](#deploying-to-vercel)). With several servers, keep the schedule on in one.
+The home page is for people who are stuck on AI training work: who it is for, what we do, an image slider, common challenges, the platforms we help with and the chat channels. Its words and image paths are in `src/content/landing.ts`; photos go in `public/images` (see the sizes at the top of that file). `/market` shows the job market overview from the newest published figures. `/platforms` shows the Platforms guide: the platform race, projects by sector and pay. `/contact` is the Contact us page with the contact form (`CON-01`). The figures update themselves: the app server collects them at 00:30, 06:30, 12:30 and 18:30 UTC, and about 30 seconds after it starts if it missed one (`TRD-01`, [ADR 0006](docs/adr/0006-collect-every-6-hours.md)). A run takes 2 to 3 minutes, most of it spent on gently paced per-platform searches (`TRD-11`). A later run on the same day replaces that day's figures with the newer file, so the history keeps one point per day. To collect with a cron job instead, set `TRENDS_SCHEDULE=off` and run `npm run trends:collect`, or call `/api/trends/collect` (see [Deploying to Vercel](#deploying-to-vercel)). With several servers, keep the schedule on in one.
 
 In production, set `CONTACT_HASH_SECRET` to a random value of at least 32 characters; the server will not start without it (`CON-04`, see `.env.example`).
 

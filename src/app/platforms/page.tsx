@@ -55,9 +55,9 @@ export default function PlatformsPage() {
 
 function Hero() {
   return (
-    <section className="border-b border-line">
+    <section className="border-b border-line bg-linear-to-b from-brand-wash to-page">
       <div className={`${pageWidth} py-14 sm:py-20 lg:py-24`}>
-        <p className="inline-flex items-center gap-2 rounded-full bg-tint px-4 py-1.5 text-sm font-semibold text-ink-2">
+        <p className="inline-flex items-center gap-2 rounded-full bg-brand-wash px-4 py-1.5 text-sm font-semibold text-brand-ink">
           <span aria-hidden="true">🏁</span> Updated {updateCadence()}
         </p>
         <h1 className="mt-6 max-w-4xl text-4xl leading-[1.1] font-bold tracking-tight text-balance text-ink sm:text-5xl lg:text-6xl">
@@ -77,7 +77,7 @@ function Hero() {
                 >
                   <span
                     aria-hidden="true"
-                    className="flex size-9 shrink-0 items-center justify-center rounded-full bg-ink text-base font-bold text-page sm:size-10"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand text-base font-bold text-white sm:size-10"
                   >
                     {s.number}
                   </span>
@@ -143,7 +143,7 @@ function PageSection({
         <p className="flex items-center gap-3 text-sm font-semibold tracking-widest text-ink-2 uppercase">
           <span
             aria-hidden="true"
-            className="flex size-8 items-center justify-center rounded-full bg-ink text-sm tracking-normal text-page"
+            className="flex size-8 items-center justify-center rounded-full bg-brand text-sm tracking-normal text-white"
           >
             {number}
           </span>

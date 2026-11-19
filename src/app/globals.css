@@ -3,9 +3,19 @@
 /*
  * Colour tokens. The site is light only: black text on a white page, by request.
  * Chart colours follow a validated palette: one blue series on white.
+ * Brand (ATRE, 19 November 2026): indigo for actions and the hero, amber for highlights.
+ * Contrast: white on --brand 6.3:1, --accent on --brand-deep 7.5:1, white on --brand-deep 16:1.
  */
 :root {
   color-scheme: light;
+  --brand: #4f46e5;
+  --brand-strong: #4338ca;
+  --brand-ink: #312e81;
+  --brand-deep: #1e1b4b;
+  --brand-wash: #eef2ff;
+  --brand-soft: #c7d2fe;
+  --accent: #f59e0b;
+  --accent-wash: #fff7e6;
   --page: #ffffff;
   --surface: #ffffff;
   /* A soft grey for alternate sections and quiet panels. */
@@ -19,7 +29,7 @@
   --line-strong: rgba(11, 11, 11, 0.24);
   --series: #2a78d6;
   --series-soft: #86b6ef;
-  --link: #1c5cab;
+  --link: #4338ca;
   --warning: #fab219;
   --warning-wash: #fdf3dc;
   --error: #b42318;
@@ -34,6 +44,14 @@
 }
 
 @theme inline {
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-wash: var(--brand-wash);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-accent-wash: var(--accent-wash);
   --color-page: var(--page);
   --color-surface: var(--surface);
   --color-tint: var(--tint);
