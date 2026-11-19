@@ -1,6 +1,6 @@
 # ADR 0005: A public contact form before member sign-in
 
-- **Status:** Accepted, amended 2026-11-14 and 2026-11-15 (see the amendments at the end)
+- **Status:** Accepted, amended 2026-11-14, 2026-11-15 and 2026-11-18 (see the amendments at the end)
 - **Date:** 2026-11-13
 - **Design reference:** system design v3.2, §6 (`CON-01` to `CON-06`)
 
@@ -42,3 +42,14 @@ The owner decided to simplify the section (#7). Two points above no longer hold:
 - `CON-02`, `CON-06` and `AT-15` record the change.
 
 Consequences: nothing on the section asks visitors to keep task content, assessment questions or logins out of their message, so some messages may contain them. `EXP-12` and Appendix A are unchanged. Messages also arrive without a topic, so the team learns what each one is about only by reading it.
+
+## Amendment (2026-11-18): its own Contact us page
+
+At the owner's request (#9), the contact section is no longer part 4 of the Platform guide. It has its own page, `/contact`.
+
+- The page shows what the section showed: the heading and intro, "Prefer to chat?" with the Telegram and Discord buttons, and the form. It reads no market data, so it is built as a static page and needs the database only when someone sends a message.
+- The menu's "Contact us" and the home page link to `/contact`. The Platform guide has three parts and ends with the same "Struggling with AI training?" box as the home page.
+- `/platforms#contact` was the old address. The part after `#` never reaches the server, so the Platform guide forwards it to `/contact` in the browser.
+- The form, the server checks, the per-address limit, the stored messages and `npm run contact:list` are unchanged. `CON-01` records the new address.
+
+Consequence: people reading the guide reach the form with one more click, and the form no longer sits below the figures.

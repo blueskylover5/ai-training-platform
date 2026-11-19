@@ -7,7 +7,7 @@ A free service with two parts:
 
 The product baseline is [docs/system-design-v3.md](docs/system-design-v3.md). Architecture decisions are in [docs/adr](docs/adr).
 
-**Status:** Phase 1 (Trends) is in development. Collection every 6 hours, the trends overview page and the Platforms guide (platform race, sectors, pay and a contact form) work; separate chart pages and share images are next.
+**Status:** Phase 1 (Trends) is in development. Collection every 6 hours, the trends overview page, the Platforms guide (platform race, sectors and pay) and the Contact us page work; separate chart pages and share images are next.
 
 ## Stack
 
@@ -29,7 +29,7 @@ npm run db:migrate       # create the local database in .data/pglite
 npm run dev              # http://localhost:3000; collects the figures by itself (see below)
 ```
 
-The home page shows the trends overview from the newest published figures, and `/platforms` shows the Platforms guide: the platform race, projects by sector, pay and the contact form. The figures update themselves: the app server collects them at 00:30, 06:30, 12:30 and 18:30 UTC, and about 30 seconds after it starts if it missed one (`TRD-01`, [ADR 0006](docs/adr/0006-collect-every-6-hours.md)). A run takes 2 to 3 minutes, most of it spent on gently paced per-platform searches (`TRD-11`). A later run on the same day replaces that day's figures with the newer file, so the history keeps one point per day. To collect with a cron job instead, set `TRENDS_SCHEDULE=off` and run `npm run trends:collect`. On serverless hosting, where nothing runs between requests, that is the only way. With several servers, keep the schedule on in one.
+The home page shows the trends overview from the newest published figures. `/platforms` shows the Platforms guide: the platform race, projects by sector and pay. `/contact` is the Contact us page with the contact form (`CON-01`). The figures update themselves: the app server collects them at 00:30, 06:30, 12:30 and 18:30 UTC, and about 30 seconds after it starts if it missed one (`TRD-01`, [ADR 0006](docs/adr/0006-collect-every-6-hours.md)). A run takes 2 to 3 minutes, most of it spent on gently paced per-platform searches (`TRD-11`). A later run on the same day replaces that day's figures with the newer file, so the history keeps one point per day. To collect with a cron job instead, set `TRENDS_SCHEDULE=off` and run `npm run trends:collect`. On serverless hosting, where nothing runs between requests, that is the only way. With several servers, keep the schedule on in one.
 
 In production, set `CONTACT_HASH_SECRET` to a random value of at least 32 characters; the server will not start without it (`CON-04`, see `.env.example`).
 

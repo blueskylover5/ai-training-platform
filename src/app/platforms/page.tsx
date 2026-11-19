@@ -17,12 +17,12 @@ import { getPlatformGuide, type PlatformGuideData, type PlatformRaceData } from 
 import { buildRaces, toBoard } from "@/trends/race";
 import { ChartCard, DataExtras, DataTable } from "../_components/chart-card";
 import { BarList } from "../_components/charts";
+import { ContactTeaser } from "../_components/contact-teaser";
 import { NoDataYet, StaleNotice } from "../_components/notices";
 import { pageWidth } from "../_components/page-width";
 import { PayBySectorCard } from "../_components/pay-by-sector-card";
-import { ContactSection } from "./contact-section";
 import { RaceBoard } from "./race-board";
-import { ScrollToHash } from "./scroll-to-hash";
+import { ForwardOldContactLink, ScrollToHash } from "./scroll-to-hash";
 
 export const metadata: Metadata = {
   title: `AI training platforms: who's hiring, which fields and what they pay · ${siteConfig.shortName}`,
@@ -34,17 +34,20 @@ const sections = [
   { id: "platforms", number: 1, label: "Platforms", hint: "Who is hiring" },
   { id: "sectors", number: 2, label: "Sectors", hint: "Fields in demand" },
   { id: "pay", number: 3, label: "Pay", hint: "What roles advertise" },
-  { id: "contact", number: 4, label: "Contact", hint: "Get help" },
 ] as const;
 
 export default function PlatformsPage() {
   return (
     <main className="flex-1">
+      <ForwardOldContactLink />
       <Hero />
       <Suspense fallback={<LiveLoading />}>
         <LiveSections />
       </Suspense>
-      <ContactSection />
+      {/* The guide ends with the way to get help, which has its own page (CON-01). */}
+      <div className={`${pageWidth} pb-16 sm:pb-24`}>
+        <ContactTeaser />
+      </div>
     </main>
   );
 }
@@ -64,7 +67,7 @@ function Hero() {
           hiring, which fields need people and what the roles advertise per hour. Stuck? We&apos;re here to help.
         </p>
         <nav aria-label="On this page" className="mt-10 sm:mt-12">
-          <ol className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <ol className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
             {sections.map((s) => (
               <li key={s.id}>
                 <a

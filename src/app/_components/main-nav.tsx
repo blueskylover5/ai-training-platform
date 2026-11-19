@@ -29,8 +29,11 @@ export function MainNav() {
         );
       })}
       <Link
-        href="/platforms#contact"
-        className="rounded-full bg-ink px-5 py-2 font-semibold text-page hover:no-underline hover:opacity-90"
+        href="/contact"
+        aria-current={pathname === "/contact" ? "page" : undefined}
+        className={`rounded-full bg-ink px-5 py-2 font-semibold text-page hover:opacity-90 ${
+          pathname === "/contact" ? "underline decoration-2 underline-offset-4" : "hover:no-underline"
+        }`}
       >
         Contact us
       </Link>

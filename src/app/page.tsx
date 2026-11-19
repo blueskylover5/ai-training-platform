@@ -14,6 +14,7 @@ import {
 } from "@/trends/present";
 import { getTrendsOverview, type TotalsFigures, type TrendsOverview } from "@/trends/queries";
 import { ChartCard, DataTable } from "./_components/chart-card";
+import { ContactTeaser } from "./_components/contact-teaser";
 import { BarList, WeeklyColumns } from "./_components/charts";
 import { NoDataYet, StaleNotice } from "./_components/notices";
 import { pageWidth } from "./_components/page-width";
@@ -34,7 +35,7 @@ export default function Home() {
       <Suspense fallback={<OverviewLoading />}>
         <Overview />
       </Suspense>
-      <ContactTeaser />
+      <ContactTeaser className="mt-12 sm:mt-16" />
     </main>
   );
 }
@@ -221,26 +222,3 @@ function OverviewLoading() {
   );
 }
 
-function ContactTeaser() {
-  return (
-    <section
-      aria-labelledby="help-title"
-      className="mt-12 flex flex-col items-start gap-6 rounded-3xl bg-tint p-6 sm:mt-16 sm:p-10 lg:flex-row lg:items-center lg:justify-between"
-    >
-      <div className="max-w-2xl">
-        <h2 id="help-title" className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-          Struggling with AI training?
-        </h2>
-        <p className="mt-3 text-lg leading-8 text-ink-2">
-          Tell us where you&apos;re stuck and we&apos;ll work through it with you.
-        </p>
-      </div>
-      <Link
-        href="/platforms#contact"
-        className="inline-flex shrink-0 items-center rounded-full bg-ink px-7 py-3.5 text-lg font-semibold text-page hover:no-underline hover:opacity-90"
-      >
-        Contact us →
-      </Link>
-    </section>
-  );
-}

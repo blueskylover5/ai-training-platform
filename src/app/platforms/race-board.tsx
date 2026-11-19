@@ -60,7 +60,7 @@ export function RaceBoard({ board }: { board: RaceBoardData }) {
   const [run, setRun] = useState(0);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  // Other links on the page (#pay, #contact) change the hash too; keep showing the last race picked.
+  // Other links on the page (#sectors, #pay) change the hash too; keep showing the last race picked.
   const [raceHash, setRaceHash] = useState(hash);
   if (hash !== raceHash && hash.startsWith(HASH_PREFIX)) setRaceHash(hash);
 
