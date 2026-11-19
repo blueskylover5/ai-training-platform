@@ -95,8 +95,8 @@ export const trendsConfig = {
 } as const;
 
 /**
- * Contact section on the Platforms page (CON-01 to CON-06, ADR 0005).
- * Messages are stored on the server and never shown on any public page.
+ * The Contact us page, /contact (CON-01 to CON-06, ADR 0005).
+ * Messages are stored on the server, emailed to the team, and never shown on any public page.
  */
 export const contactConfig = {
   /**
@@ -135,6 +135,19 @@ export const contactConfig = {
   developmentHashSecret: "local-development-only",
   /** CON-04: the hidden anti-bot field. A name and label browsers and password managers don't autofill. */
   honeypotField: "leave_this_empty",
+  /**
+   * CON-03 (ADR 0005, amended 19 November 2026): each stored message is also emailed to the team
+   * through Resend. Off until RESEND_API_KEY and CONTACT_NOTIFY_TO are both set. Until Resend has a
+   * verified domain of ours, it sends only from onboarding@resend.dev, and only to the address the
+   * Resend account was opened with.
+   */
+  email: {
+    apiUrl: "https://api.resend.com/emails",
+    to: process.env.CONTACT_NOTIFY_TO?.trim() || null,
+    from: process.env.CONTACT_NOTIFY_FROM?.trim() || "AI Training Platform <onboarding@resend.dev>",
+    subjectMaxChars: 80,
+    timeoutMs: 10_000,
+  },
 } as const;
 
 export const storageConfig = {

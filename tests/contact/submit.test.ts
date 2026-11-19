@@ -156,6 +156,51 @@ describe("submitContactMessage (CON-01 to CON-04)", () => {
     expect(await stored()).toHaveLength(contactConfig.maxPerAddressPerHour);
   });
 
+  it("hands each stored message on once, for the team's email (CON-03)", async () => {
+    const onStored = vi.fn();
+
+    await submitContactMessage(handle.db, form(valid), { address: ADDRESS, now: NOW, hashSecret: SECRET, onStored });
+
+    const [row] = await stored();
+    expect(onStored).toHaveBeenCalledExactlyOnceWith({
+      id: row.id,
+      createdAt: NOW,
+      name: "Sam",
+      email: "sam@example.com",
+      message: valid.message,
+    });
+  });
+
+  it("hands on nothing that was not stored (CON-03, CON-04)", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const onStored = vi.fn();
+    const send = (fields: Record<string, string>) =>
+      submitContactMessage(handle.db, form(fields), { address: ADDRESS, now: NOW, hashSecret: SECRET, onStored });
+
+    await send({ ...valid, email: "a@b" });
+    await send({ ...valid, [contactConfig.honeypotField]: "https://spam.example" });
+    for (let i = 0; i < contactConfig.maxPerAddressPerHour; i++) await send(valid);
+    onStored.mockClear();
+    expect((await send(valid)).status).toBe("limited");
+
+    expect(onStored).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
+  });
+
+  it("still says sent when handing the message on fails", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const onStored = () => {
+      throw new Error("after() called outside a request");
+    };
+
+    const result = await submitContactMessage(handle.db, form(valid), { address: ADDRESS, now: NOW, hashSecret: SECRET, onStored });
+
+    expect(result.status).toBe("sent");
+    expect(await stored()).toHaveLength(1);
+    expect(error).toHaveBeenCalledWith("[contact] Could not hand a stored message on:", expect.any(Error));
+    error.mockRestore();
+  });
+
   it("returns an error that keeps the typed values when the database fails", async () => {
     const error = vi.spyOn(console, "error").mockImplementation(() => {});
     const broken = {

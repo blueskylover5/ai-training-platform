@@ -49,6 +49,8 @@ One-time set-up:
 2. Under **Environment Variables**, add these for Production and Preview. Generate each value with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
    - `CONTACT_HASH_SECRET`: at least 32 characters (`CON-04`).
    - `CRON_SECRET`: at least 16 characters.
+   - `RESEND_API_KEY`: from [resend.com](https://resend.com) → **API Keys**. Open the Resend account with the address that should receive contact messages.
+   - `CONTACT_NOTIFY_TO`: that address. Each contact message is emailed there (`CON-03`).
 3. Deploy. The first build stops with "DATABASE_URL is not set"; that is expected.
 4. In the project, open **Storage → Create Database → Neon**, choose the free plan and connect it to the project. This sets `DATABASE_URL` and `DATABASE_URL_UNPOOLED`.
 5. Open **Deployments**, then **Redeploy** the latest one. Its build creates the tables.
@@ -77,7 +79,7 @@ On Vercel:
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run db:migrate` | Apply database migrations (on Vercel, before each production build) |
 | `npm run trends:collect` | One collection run by hand or from cron: download, check and store the latest trend figures, then count each platform's new and big-pay roles (`TRD-01`, `TRD-02`, `TRD-11`) |
-| `npm run contact:list` | Print the newest contact-form messages (`CON-03`); with the local database, stop `npm run dev` first |
+| `npm run contact:list` | Print the newest contact-form messages (`CON-03`), which are also emailed when `RESEND_API_KEY` and `CONTACT_NOTIFY_TO` are set; with the local database, stop `npm run dev` first |
 
 Before opening a pull request, run `npm run lint && npm run typecheck && npm test && npm run build`.
 
