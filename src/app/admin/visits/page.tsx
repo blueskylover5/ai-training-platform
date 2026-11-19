@@ -23,8 +23,8 @@ export default function VisitsPage({ searchParams }: PageProps<"/admin/visits">)
       <div className={`${pageWidth} py-12 sm:py-16`}>
         <h1 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Visitor log</h1>
         <p className="mt-3 max-w-3xl text-base leading-7 text-ink-2 sm:text-lg sm:leading-8">
-          Every page view on the site: time (UTC), page, IP address, approximate location and browser. Records are kept
-          without a time limit. Only you can see this page.
+          Every page view on the site: time ({timeZone.name}, {timeZone.label}), page, IP address, approximate location
+          and browser. Records are kept without a time limit. Only you can see this page.
         </p>
         <Suspense fallback={<p className="mt-10 text-ink-2">Loading the visitor log…</p>}>
           <Report searchParams={searchParams} />
@@ -34,6 +34,8 @@ export default function VisitsPage({ searchParams }: PageProps<"/admin/visits">)
   );
 }
 
+/** Visit times show in Japan time (JST), at the owner's request; the database keeps UTC. */
+const { timeZone } = visitConfig.admin;
 const time = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
   month: "short",
@@ -42,7 +44,7 @@ const time = new Intl.DateTimeFormat("en-GB", {
   minute: "2-digit",
   second: "2-digit",
   hourCycle: "h23",
-  timeZone: "UTC",
+  timeZone: timeZone.id,
 });
 const number = new Intl.NumberFormat("en-US");
 
@@ -113,7 +115,7 @@ async function Report({ searchParams }: { searchParams: PageProps<"/admin/visits
           </p>
         ) : (
           <div className="mt-6">
-            <VisitTable rows={visits.map(toRow)} total={summary.allTime} />
+            <VisitTable rows={visits.map(toRow)} total={summary.allTime} timeZoneLabel={timeZone.label} />
           </div>
         )}
         <nav aria-label="Pages of visits" className="mt-6 flex gap-6">

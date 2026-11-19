@@ -199,6 +199,11 @@ export const visitConfig = {
     topCount: 10,
     /** Most visits one delete request may name; "all visits" is sent as such, not as a list. */
     maxDeleteIds: 500,
+    /**
+     * The time zone the admin page and the CSV show visit times in: Japan time, at the owner's request
+     * (20 November 2026). The database keeps UTC. Japan has no daylight saving time, so the label always fits.
+     */
+    timeZone: { id: "Asia/Tokyo", label: "JST", name: "Japan time" },
   },
 } as const;
 
