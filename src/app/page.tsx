@@ -19,8 +19,8 @@ import { pageWidth } from "./_components/page-width";
 /** Real situations people bring to us, in the owner's words; the list ends with "…" on purpose. */
 const whoFor = [
   <>
-    You&apos;ve been invited to the &ldquo;chiper&rdquo; project on Afterquery, but your &ldquo;questions&rdquo; keep
-    getting rejected as &ldquo;too simple&rdquo;, so you can&apos;t earn anything.
+    You&apos;ve been invited to the &ldquo;Chiper&rdquo; project on Afterquery, but your &ldquo;questions&rdquo; keep
+    getting rejected as &ldquo;too easy&rdquo;, so you can&apos;t earn anything.
   </>,
   <>
     You&apos;ve been invited to the &ldquo;Bibliotheca&rdquo; project on Handshake, but you simply can&apos;t pass

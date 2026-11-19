@@ -45,7 +45,7 @@ export const challenges: Challenge[] = [
     alt: "A man at a laptop, holding his head in frustration.",
     emoji: "🙅",
     title: "Your tasks keep getting rejected",
-    text: "Reviewers call your work “too simple”, “low effort” or “not challenging enough”, and you can’t tell what they want.",
+    text: "Reviewers call your work “too easy”, “low effort” or “not challenging enough”, and you can’t tell what they want.",
   },
   {
     key: "assessment",

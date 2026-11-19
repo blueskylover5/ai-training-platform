@@ -1,6 +1,5 @@
 import { contactConfig } from "@/config";
 import { ChatChannels, hasChatChannels } from "../_components/chat-channels";
-import { HeroCta } from "../_components/hero-cta";
 import { pageWidth } from "../_components/page-width";
 import { ContactForm, type ContactFormSettings } from "./contact-form";
 
@@ -25,7 +24,7 @@ export function ContactSection() {
             If AI training feels hard, or something in your field is stopping you from earning, reach out. Tell us where
             you&apos;re stuck and we&apos;ll work through it with you until you have a complete solution.
           </p>
-          <HeroCta href="#message" label="Send us a message ↓" withTelegram={false} className="mt-8" />
+          {/* No hero button here (owner's request): the form and the chat buttons are right here. */}
 
           {hasChatChannels() && (
             <div className="mt-10">
@@ -35,7 +34,7 @@ export function ContactSection() {
           )}
         </div>
 
-        <div id="message" className="scroll-mt-6 rounded-3xl border border-line bg-surface p-6 shadow-[0_8px_30px_rgba(11,11,11,0.06)] sm:p-10">
+        <div className="rounded-3xl border border-line bg-surface p-6 shadow-[0_8px_30px_rgba(11,11,11,0.06)] sm:p-10">
           <h2 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Send us a message</h2>
           <p className="mt-2 mb-8 text-base leading-7 text-ink-2">We read every message and reply by email.</p>
           <ContactForm settings={settings} />

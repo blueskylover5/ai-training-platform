@@ -4,26 +4,13 @@ import { contactChannels } from "@/contact/channels";
 import { TelegramIcon } from "./brand-icons";
 
 /**
- * The call to action in every page's hero (owner's request, 19 November 2026): the main button to
- * Contact us, and Telegram beside it once it is set up (CON-05). `onDark` for heroes on the dark
- * brand background. On the Contact us page, the main button points at the form instead.
+ * The call to action in the heroes of the home page, Job market and the Platform guide (owner's
+ * request, 19 November 2026): the main button to Contact us, and Telegram beside it once it is set
+ * up (CON-05). `onDark` for heroes on the dark brand background. Contact us has none: its form and
+ * chat buttons are right there.
  */
-export function HeroCta({
-  onDark = false,
-  href = "/contact",
-  // A no-break space keeps the arrow with its word on narrow screens.
-  label = "Tell us where you're stuck →",
-  withTelegram = true,
-  className = "",
-}: {
-  onDark?: boolean;
-  href?: string;
-  label?: string;
-  /** False where the page already shows the chat buttons nearby (Contact us). */
-  withTelegram?: boolean;
-  className?: string;
-}) {
-  const telegram = withTelegram ? contactChannels(contactConfig).telegram : null;
+export function HeroCta({ onDark = false, className = "" }: { onDark?: boolean; className?: string }) {
+  const { telegram } = contactChannels(contactConfig);
   const base =
     "inline-flex w-full items-center justify-center gap-2.5 rounded-full px-7 py-3.5 text-center text-lg font-semibold hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 sm:w-auto";
   const primary = onDark
@@ -35,15 +22,10 @@ export function HeroCta({
 
   return (
     <div className={`flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 ${className}`}>
-      {href.startsWith("#") ? (
-        <a href={href} className={primary}>
-          {label}
-        </a>
-      ) : (
-        <Link href={href} className={primary}>
-          {label}
-        </Link>
-      )}
+      <Link href="/contact" className={primary}>
+        {/* A no-break space keeps the arrow with its word on narrow screens. */}
+        Tell us where you&apos;re stuck&nbsp;→
+      </Link>
       {telegram && (
         <a href={telegram.href} target="_blank" rel="noopener noreferrer" className={secondary}>
           <TelegramIcon className="size-6" />
