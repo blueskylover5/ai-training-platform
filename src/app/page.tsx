@@ -208,7 +208,7 @@ function PlatformBadge({ platform }: { platform: PlatformMark }) {
 
 function MarketPointer() {
   return (
-    <section aria-labelledby="market-title" className="pb-20 sm:pb-28">
+    <section aria-labelledby="market-title" className="py-20 sm:py-28">
       <div className={pageWidth}>
         <div className="rounded-3xl bg-brand-deep p-8 text-white sm:p-12">
           <h2 id="market-title" className="text-2xl font-bold tracking-tight sm:text-3xl">
