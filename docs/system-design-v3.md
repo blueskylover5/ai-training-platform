@@ -1,4 +1,4 @@
-# AI Training Opportunity & Expert Support Platform
+# ATRE (AI Training Resolution Expert): system design
 
 **System design · Version 3.2 · 13 November 2026**
 
@@ -34,6 +34,7 @@ Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, f
 - 19 November 2026: at the owner's request, each contact message is also emailed to the owner through Resend, with the visitor's address as Reply-To (`CON-03`). See the amendment to [ADR 0005](adr/0005-public-contact-form.md).
 - 19 November 2026: by the owner's decision, the site keeps a **visitor log**: each page view with its time, page, IP address, approximate location and browser, kept without a time limit, shown only on a password-protected admin page. The footer tells visitors (`VIS-01` to `VIS-04`, §10). See [ADR 0008](adr/0008-visitor-log.md).
 - 19 November 2026: at the owner's request, the site has no footer. The data credit line now sits under the headline figures on the home page and the Platform guide, as it already did under every chart (`TRD-04`). The notice that visits are logged went with the footer (`VIS-02`).
+- 19 November 2026: the product is named **AI Training Resolution Expert (ATRE)**, and "ATRE" is its logo and favicon. The site has brand colours (indigo with amber highlights). The home page now speaks to people who are stuck on AI training work: a headline over a background slideshow of photos, then a section with who it is for and what we do, "Are you facing these challenges?", and the platforms we help with. The job market overview moved to `/market` (menu: "Job market"). The heroes of the home page, Job market and the Platform guide have a call-to-action row: "Tell us where you're stuck" to Contact us. Contact us has none, because its form is already there; at the owner's request, the Telegram and Discord buttons appear on Contact us only. The photos are CC0 or public domain, and the platform badges show each platform's own site icon; sources are in [image credits](image-credits.md).
 
 ### What changed in v3.1 (12 November 2026)
 
@@ -180,7 +181,8 @@ These files hold only the current day's figures. **Saving a copy every day build
 
 | Page | Shows |
 |---|---|
-| **Overview** (menu: "Job market") | Open roles, live platforms, new roles in the last 7 days; new roles per week; top kinds of work by open roles |
+| **Home** (`/`) | A headline over a background slideshow of photos (still for visitors who ask for less motion); then who ATRE is for, with real examples, and what we do, with a button to Contact us; "Are you facing these challenges?" with a photo per challenge; the platforms we help with (names and logos, no links) |
+| **Overview** (`/market`; menu: "Job market") | Open roles, live platforms, new roles in the last 7 days; new roles per week; top kinds of work by open roles |
 | **Kind of work** (one page each, for example "Law, Medicine & Finance") | Open roles over time, median and typical pay, number of platforms, a short team-written explanation of the work, links to matching team experts and jobs |
 | **Pay** | Median and typical range for every kind of work, side by side |
 | **Platforms** (a three-part guide; menu: "Platform guide") | Today's headline figures, then: **1. Platform status:** an animated leaderboard with three races (most open roles, most new roles in the last 7 days, most roles advertising $100+ an hour), the top 10 with ties at 10th, places gained or lost when you switch races, commentary written from the figures, and a link per race (`#race-new`). **2. Projects by sector:** open roles and share for each kind of work. **3. Pay:** advertised hourly pay by sector, and each platform's share of roles advertising $100+ an hour (platforms with at least 20 open roles). It ends with a "Struggling with AI training?" box linking to the Contact us page. Change over time comes once history builds up |
@@ -421,7 +423,8 @@ Sizes are rough, for one or two developers.
 | AITraining.jobs: `/go/` field in feed and click credit | Pending | Product owner | Only needed for the jobs module |
 | Tell AITraining.jobs about the trend pages | Pending | Product owner | The licence already allows it; telling them keeps the partnership healthy |
 | Hosting | Resolved | Business owner | Vercel free plan with Neon Postgres (free plan), decided 19 Nov 2026 ([ADR 0007](adr/0007-host-on-vercel.md)). Vercel's free plan is for non-commercial use: move to Pro once the site earns money |
-| Product name and domain | Pending | Business owner | Needed for credit links, email and the feed `source=` tag |
+| Product name | Resolved | Business owner | AI Training Resolution Expert (ATRE), decided 19 Nov 2026; "ATRE" is the logo and favicon |
+| Domain | Pending | Business owner | Needed for credit links, email from our own address and the feed `source=` tag |
 | Funding model | Pending | Business owner | See §3 |
 | Contact channels and scheduling tool | Pending | Operations | Work email, work Telegram, scheduling links; team Telegram and Discord channels for the contact section, which uses two personal accounts until then (`CON-05`) |
 | Email delivery for contact messages | Resolved for now | Operations | Resend, to the owner's Gmail address, decided 19 Nov 2026 (`CON-03`). Until the product domain is verified with Resend, emails come from onboarding@resend.dev and can only go to the address the Resend account was opened with |

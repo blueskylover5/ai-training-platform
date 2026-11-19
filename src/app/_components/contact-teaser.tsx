@@ -5,7 +5,7 @@ export function ContactTeaser({ className = "" }: { className?: string }) {
   return (
     <section
       aria-labelledby="help-title"
-      className={`flex flex-col items-start gap-6 rounded-3xl bg-tint p-6 sm:p-10 lg:flex-row lg:items-center lg:justify-between ${className}`}
+      className={`flex flex-col items-start gap-6 rounded-3xl bg-brand-wash p-6 sm:p-10 lg:flex-row lg:items-center lg:justify-between ${className}`}
     >
       <div className="max-w-2xl">
         <h2 id="help-title" className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
@@ -17,7 +17,7 @@ export function ContactTeaser({ className = "" }: { className?: string }) {
       </div>
       <Link
         href="/contact"
-        className="inline-flex shrink-0 items-center rounded-full bg-ink px-7 py-3.5 text-lg font-semibold text-page hover:no-underline hover:opacity-90"
+        className="inline-flex shrink-0 items-center rounded-full bg-brand px-7 py-3.5 text-lg font-semibold text-white hover:no-underline hover:opacity-90"
       >
         Contact us →
       </Link>

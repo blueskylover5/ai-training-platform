@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { siteConfig, visitConfig } from "@/config";
+import { Logo } from "./_components/logo";
 import { MainNav } from "./_components/main-nav";
 import { pageWidth } from "./_components/page-width";
 import { VisitTracker } from "./_components/visit-tracker";
@@ -18,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: siteConfig.name,
+  title: `${siteConfig.shortName} · ${siteConfig.name}`,
   description: siteConfig.description,
 };
 
@@ -28,8 +29,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <header className="border-b border-line bg-page">
           <div className={`${pageWidth} flex flex-wrap items-center justify-between gap-x-8 gap-y-3 py-5`}>
-            <Link href="/" className="text-lg font-bold tracking-tight text-ink hover:no-underline sm:text-xl">
-              {siteConfig.shortName}
+            <Link href="/" className="hover:no-underline">
+              <Logo withName />
             </Link>
             <MainNav />
           </div>

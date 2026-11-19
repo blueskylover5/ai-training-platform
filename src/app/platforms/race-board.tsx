@@ -123,7 +123,7 @@ export function RaceBoard({ board }: { board: RaceBoardData }) {
               onKeyDown={onTabKeyDown}
               className={`flex items-center gap-2 rounded-full border px-5 py-2.5 text-base font-medium transition-colors ${
                 selected
-                  ? "border-ink bg-ink text-page"
+                  ? "border-brand bg-brand text-white"
                   : race.available
                     ? "border-line bg-surface text-ink hover:border-ink-3"
                     : "cursor-not-allowed border-line bg-surface text-ink-3"

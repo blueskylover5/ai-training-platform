@@ -18,6 +18,7 @@ import { buildRaces, toBoard } from "@/trends/race";
 import { ChartCard, DataExtras, DataTable } from "../_components/chart-card";
 import { BarList } from "../_components/charts";
 import { Credit } from "../_components/credit";
+import { HeroCta } from "../_components/hero-cta";
 import { ContactTeaser } from "../_components/contact-teaser";
 import { NoDataYet, StaleNotice } from "../_components/notices";
 import { pageWidth } from "../_components/page-width";
@@ -55,9 +56,9 @@ export default function PlatformsPage() {
 
 function Hero() {
   return (
-    <section className="border-b border-line">
+    <section className="border-b border-line bg-linear-to-b from-brand-wash to-page">
       <div className={`${pageWidth} py-14 sm:py-20 lg:py-24`}>
-        <p className="inline-flex items-center gap-2 rounded-full bg-tint px-4 py-1.5 text-sm font-semibold text-ink-2">
+        <p className="inline-flex items-center gap-2 rounded-full bg-brand-wash px-4 py-1.5 text-sm font-semibold text-brand-ink">
           <span aria-hidden="true">🏁</span> Updated {updateCadence()}
         </p>
         <h1 className="mt-6 max-w-4xl text-4xl leading-[1.1] font-bold tracking-tight text-balance text-ink sm:text-5xl lg:text-6xl">
@@ -67,6 +68,7 @@ function Hero() {
           Dozens of platforms pay people to write, check and rate AI answers. Here is how they compare today: who is
           hiring, which fields need people and what the roles advertise per hour. Stuck? We&apos;re here to help.
         </p>
+        <HeroCta className="mt-8" />
         <nav aria-label="On this page" className="mt-10 sm:mt-12">
           <ol className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
             {sections.map((s) => (
@@ -77,7 +79,7 @@ function Hero() {
                 >
                   <span
                     aria-hidden="true"
-                    className="flex size-9 shrink-0 items-center justify-center rounded-full bg-ink text-base font-bold text-page sm:size-10"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand text-base font-bold text-white sm:size-10"
                   >
                     {s.number}
                   </span>
@@ -143,7 +145,7 @@ function PageSection({
         <p className="flex items-center gap-3 text-sm font-semibold tracking-widest text-ink-2 uppercase">
           <span
             aria-hidden="true"
-            className="flex size-8 items-center justify-center rounded-full bg-ink text-sm tracking-normal text-page"
+            className="flex size-8 items-center justify-center rounded-full bg-brand text-sm tracking-normal text-white"
           >
             {number}
           </span>
