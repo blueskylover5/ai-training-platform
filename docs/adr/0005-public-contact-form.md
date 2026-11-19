@@ -1,6 +1,6 @@
 # ADR 0005: A public contact form before member sign-in
 
-- **Status:** Accepted, amended 2026-11-14, 2026-11-15 and 2026-11-18 (see the amendments at the end)
+- **Status:** Accepted, amended 2026-11-14, 2026-11-15, 2026-11-18 and 2026-11-19 (see the amendments at the end)
 - **Date:** 2026-11-13
 - **Design reference:** system design v3.2, §6 (`CON-01` to `CON-06`)
 
@@ -53,3 +53,22 @@ At the owner's request (#9), the contact section is no longer part 4 of the Plat
 - The form, the server checks, the per-address limit, the stored messages and `npm run contact:list` are unchanged. `CON-01` records the new address.
 
 Consequence: people reading the guide reach the form with one more click, and the form no longer sits below the figures.
+
+## Amendment (2026-11-19): each message is emailed to the owner
+
+The owner asked for every contact message to arrive by email, and chose Resend as the sending service.
+
+- **When:** after a message is stored (`CON-03`), the Server Action emails it with `after()`. The visitor gets their answer first, and a slow or failing email can't change it. Messages that are refused, over the limit or caught by the hidden bot field are not emailed.
+- **The email:** plain text, sent to `CONTACT_NOTIFY_TO`. The subject is "Contact form: <name or email>". The body gives the sender, the time (UTC), the message number and the message. Reply-To is the visitor's address, so replying answers them. Control characters and direction marks are shown as U+FFFD, as `contact:list` shows them.
+- **Sent once:** each request carries the idempotency key `contact-message-<id>`, so Resend never sends a message twice.
+- **Failures:** a failed email is logged with Resend's reason. The message stays stored, and `npm run contact:list` still shows it.
+- **Settings:** `RESEND_API_KEY` and `CONTACT_NOTIFY_TO`; email is off until both are set. `CONTACT_NOTIFY_FROM` defaults to "AI Training Platform <onboarding@resend.dev>".
+
+Consequences:
+
+- Messages now pass through Resend and the owner's Gmail account, not only our database.
+- Until our domain is verified with Resend:
+  - Emails come from onboarding@resend.dev.
+  - Resend sends them only to the address the Resend account was opened with, so that account must be opened with `CONTACT_NOTIFY_TO`.
+  - Gmail may file the first emails as spam. Marking one as "Not spam" usually fixes that.
+- Resend's free plan allows 3,000 emails a month (100 a day). Combined with the per-address limit (`CON-04`), that is plenty for a contact form.

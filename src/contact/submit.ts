@@ -4,6 +4,7 @@ import { contactConfig } from "../config";
 import type { Db } from "../db/client";
 import { contactMessages } from "../db/schema";
 import { hashAddress } from "./address";
+import type { StoredContactMessage } from "./notify";
 
 /*
  * The contact form's server side (CON-01 to CON-04, ADR 0005): check the fields, apply the
@@ -54,6 +55,11 @@ export interface SubmitContext {
   now?: Date;
   /** Overrides the hash secret; tests use it. */
   hashSecret?: string;
+  /**
+   * Called once a message is stored, never for one that was refused or caught by the bot field.
+   * The Server Action emails the team from here (CON-03). Its errors are logged, not shown to the visitor.
+   */
+  onStored?: (message: StoredContactMessage) => void;
 }
 
 export async function submitContactMessage(db: Db, form: FormData, context: SubmitContext): Promise<ContactResult> {
@@ -93,17 +99,26 @@ export async function submitContactMessage(db: Db, form: FormData, context: Subm
         .select({ recent: count() })
         .from(contactMessages)
         .where(and(eq(contactMessages.addressHash, addressHash), gt(contactMessages.createdAt, hourAgo)));
-      if (recent >= contactConfig.maxPerAddressPerHour) return false;
-      await tx.insert(contactMessages).values({
-        createdAt: now,
-        name: name === "" ? null : name,
-        email,
-        message,
-        addressHash,
-      });
-      return true;
+      if (recent >= contactConfig.maxPerAddressPerHour) return null;
+      const [row] = await tx
+        .insert(contactMessages)
+        .values({
+          createdAt: now,
+          name: name === "" ? null : name,
+          email,
+          message,
+          addressHash,
+        })
+        .returning({ id: contactMessages.id });
+      return row;
     });
     if (!stored) return { status: "limited", values };
+    try {
+      context.onStored?.({ id: stored.id, createdAt: now, name: name === "" ? null : name, email, message });
+    } catch (error) {
+      // The message is stored; telling the team about it is not the visitor's problem.
+      console.error("[contact] Could not hand a stored message on:", error);
+    }
   } catch (error) {
     // The visitor keeps what they typed and can try again; the details go to the server log only.
     console.error("[contact] Could not store a contact message:", error);
