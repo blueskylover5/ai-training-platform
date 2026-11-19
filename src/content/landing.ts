@@ -1,6 +1,7 @@
 /*
  * What the home page shows (19 November 2026). Images live in /public/images; while a `src` is
- * null, a coloured panel stands in, so the owner's photos can drop in without layout changes.
+ * null, a coloured panel stands in. The photos are CC0 or public domain; where each one comes from
+ * is in docs/image-credits.md.
  * Recommended sizes: hero backgrounds 2400 × 1350 (16:9, landscape, JPG), challenge photos
  * 1200 × 900 (4:3), platform logos as SVG or PNG about 240 × 80 on a transparent background.
  */
@@ -18,9 +19,10 @@ export interface HeroBackground {
  * the white text readable over any photo.
  */
 export const heroBackgrounds: HeroBackground[] = [
-  { src: null, panel: "from-brand to-[#7c3aed]" },
-  { src: null, panel: "from-[#0e7490] to-brand" },
-  { src: null, panel: "from-[#b45309] to-[#be185d]" },
+  // A team working through a problem together, someone back on track, someone working calmly.
+  { src: "/images/hero/hero-1.jpg", panel: "from-brand to-[#7c3aed]" },
+  { src: "/images/hero/hero-2.jpg", panel: "from-[#0e7490] to-brand" },
+  { src: "/images/hero/hero-3.jpg", panel: "from-[#b45309] to-[#be185d]" },
 ];
 
 export interface Challenge {
@@ -28,6 +30,8 @@ export interface Challenge {
   /** For example "/images/challenges/rejected.jpg"; null shows the coloured panel with the emoji. */
   src: string | null;
   alt: string;
+  /** Which part of the photo to keep when the card crops it (CSS object-position); centre by default. */
+  position?: string;
   emoji: string;
   title: string;
   text: string;
@@ -37,48 +41,49 @@ export interface Challenge {
 export const challenges: Challenge[] = [
   {
     key: "rejected",
-    src: null,
-    alt: "A frustrated person looking at a rejected task on a laptop.",
+    src: "/images/challenges/rejected.jpg",
+    alt: "A man at a laptop, holding his head in frustration.",
     emoji: "🙅",
     title: "Your tasks keep getting rejected",
     text: "Reviewers call your work “too simple”, “low effort” or “not challenging enough”, and you can’t tell what they want.",
   },
   {
     key: "assessment",
-    src: null,
-    alt: "A worried person staring at a failed test result.",
+    src: "/images/challenges/assessment.jpg",
+    alt: "A woman at a laptop with her hand on her head, worried.",
     emoji: "📝",
     title: "You can’t pass the assessment",
     text: "You failed the qualification test or “Attempt 2”, and there may be only one try left.",
   },
   {
     key: "stump",
-    src: null,
-    alt: "A person with their head in their hands next to a chat with an AI model.",
+    src: "/images/challenges/stump.jpg",
+    alt: "A man at his desk late at night, head in his hand, in front of an AI assistant on screen.",
     emoji: "🤖",
     title: "The model solves everything you write",
     text: "Your problems have to defeat models like Gemini, but they keep getting the answer right.",
   },
   {
     key: "no-work",
-    src: null,
-    alt: "A person looking at an empty task dashboard.",
+    src: "/images/challenges/no-work.jpg",
+    alt: "A woman resting her chin on her hand, waiting in front of her laptop.",
     emoji: "📭",
     title: "No tasks after onboarding",
     text: "You were accepted, but your dashboard has been empty for weeks.",
   },
   {
     key: "quality",
-    src: null,
-    alt: "A stressed person reading a warning email about quality scores.",
+    src: "/images/challenges/quality.jpg",
+    alt: "A stressed woman with both hands on her head.",
+    position: "center 20%",
     emoji: "📉",
     title: "Your quality score keeps dropping",
     text: "Warnings, lower scores, or the risk of being removed from a project you like.",
   },
   {
     key: "field",
-    src: null,
-    alt: "A professional unsure which AI training project fits their field.",
+    src: "/images/challenges/field.jpg",
+    alt: "A man at a laptop, hand over his mouth, unsure what to do next.",
     emoji: "🎓",
     title: "Your expertise isn’t paying off",
     text: "You’re a nurse, lawyer, engineer or teacher, but can’t find the projects that need your field.",
@@ -87,7 +92,10 @@ export const challenges: Challenge[] = [
 
 export interface PlatformMark {
   name: string;
-  /** For example "/images/platforms/afterquery.svg"; null shows the name as a styled badge. */
+  /**
+   * The platform's own site icon (the one browsers show in the tab), redrawn as a 128 × 128 PNG; null
+   * shows the first letter instead. Shown beside the name.
+   */
   logo: string | null;
 }
 
@@ -96,16 +104,16 @@ export interface PlatformMark {
  * endorse us. No links: we never link to hiring platforms directly (AITraining.jobs agreement).
  */
 export const platforms: PlatformMark[] = [
-  { name: "Afterquery", logo: null },
-  { name: "Handshake", logo: null },
-  { name: "Alignedhq", logo: null },
-  { name: "Alignerr", logo: null },
-  { name: "Outlier", logo: null },
-  { name: "Mercor", logo: null },
-  { name: "micro1", logo: null },
-  { name: "DataAnnotation", logo: null },
-  { name: "Turing", logo: null },
-  { name: "Invisible", logo: null },
-  { name: "Prolific", logo: null },
-  { name: "Welo Data", logo: null },
+  { name: "Afterquery", logo: "/images/platforms/afterquery.png" },
+  { name: "Handshake", logo: "/images/platforms/handshake.png" },
+  { name: "Alignedhq", logo: "/images/platforms/alignedhq.png" },
+  { name: "Alignerr", logo: "/images/platforms/alignerr.png" },
+  { name: "Outlier", logo: "/images/platforms/outlier.png" },
+  { name: "Mercor", logo: "/images/platforms/mercor.png" },
+  { name: "micro1", logo: "/images/platforms/micro1.png" },
+  { name: "DataAnnotation", logo: "/images/platforms/dataannotation.png" },
+  { name: "Turing", logo: "/images/platforms/turing.png" },
+  { name: "Invisible", logo: "/images/platforms/invisible.png" },
+  { name: "Prolific", logo: "/images/platforms/prolific.png" },
+  { name: "Welo Data", logo: "/images/platforms/welo-data.png" },
 ];

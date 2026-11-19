@@ -18,6 +18,7 @@ import { ChartCard, DataTable } from "../_components/chart-card";
 import { ContactTeaser } from "../_components/contact-teaser";
 import { BarList, WeeklyColumns } from "../_components/charts";
 import { Credit } from "../_components/credit";
+import { HeroCta } from "../_components/hero-cta";
 import { NoDataYet, StaleNotice } from "../_components/notices";
 import { pageWidth } from "../_components/page-width";
 import { PayBySectorCard } from "../_components/pay-by-sector-card";
@@ -39,6 +40,7 @@ export default function MarketPage() {
           How many AI training roles are open, what kind of work they need, what they advertise per hour, and which
           platforms are hiring. Free, no sign-up.
         </p>
+        <HeroCta className="mt-8" />
       </section>
       <Suspense fallback={<OverviewLoading />}>
         <Overview />

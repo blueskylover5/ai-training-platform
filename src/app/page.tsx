@@ -7,6 +7,7 @@ import { updateCadence } from "@/trends/present";
 import { TelegramIcon } from "./_components/brand-icons";
 import { ChatChannels, hasChatChannels } from "./_components/chat-channels";
 import { HeroBackdrop } from "./_components/hero-backdrop";
+import { HeroCta } from "./_components/hero-cta";
 import { pageWidth } from "./_components/page-width";
 
 /*
@@ -63,6 +64,7 @@ function Hero() {
         >
           Stuck on an AI training project? We&apos;ll get you through it.
         </h1>
+        <HeroCta onDark className="mt-10" />
       </div>
     </section>
   );
@@ -103,9 +105,9 @@ function WhoWeHelp() {
           <div className="mt-8 flex flex-col items-start gap-5">
             <Link
               href="/contact"
-              className={`${primaryButton} w-full justify-center bg-accent text-center text-brand-deep hover:brightness-105 focus-visible:outline-white sm:w-auto`}
+              className="inline-flex w-full items-center justify-center rounded-full bg-accent px-6 py-3.5 text-center text-base font-semibold text-brand-deep hover:no-underline hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto sm:px-7 sm:text-lg"
             >
-              Tell us where you&apos;re stuck →
+              Tell us where you&apos;re stuck&nbsp;→
             </Link>
             {telegram && (
               <a
@@ -166,6 +168,7 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover"
+            style={challenge.position ? { objectPosition: challenge.position } : undefined}
           />
         ) : (
           <div
@@ -205,18 +208,16 @@ function Platforms() {
 }
 
 function PlatformBadge({ platform }: { platform: PlatformMark }) {
-  if (platform.logo) {
-    return (
-      <li className="flex h-14 items-center rounded-xl bg-surface px-5">
-        <Image src={platform.logo} alt={platform.name} width={120} height={40} className="h-8 w-auto object-contain" />
-      </li>
-    );
-  }
   return (
-    <li className="flex h-14 items-center gap-3 rounded-xl border border-line bg-surface px-5 text-base font-semibold text-ink">
-      <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
-        {platform.name.charAt(0).toUpperCase()}
-      </span>
+    <li className="flex h-14 items-center gap-3 rounded-xl border border-line bg-surface px-4 text-base font-semibold text-ink">
+      {platform.logo ? (
+        // The name sits next to it, so the icon itself needs no description.
+        <Image src={platform.logo} alt="" width={32} height={32} className="size-8 rounded-lg object-contain" />
+      ) : (
+        <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
+          {platform.name.charAt(0).toUpperCase()}
+        </span>
+      )}
       {platform.name}
     </li>
   );

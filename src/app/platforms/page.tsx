@@ -18,6 +18,7 @@ import { buildRaces, toBoard } from "@/trends/race";
 import { ChartCard, DataExtras, DataTable } from "../_components/chart-card";
 import { BarList } from "../_components/charts";
 import { Credit } from "../_components/credit";
+import { HeroCta } from "../_components/hero-cta";
 import { ContactTeaser } from "../_components/contact-teaser";
 import { NoDataYet, StaleNotice } from "../_components/notices";
 import { pageWidth } from "../_components/page-width";
@@ -67,6 +68,7 @@ function Hero() {
           Dozens of platforms pay people to write, check and rate AI answers. Here is how they compare today: who is
           hiring, which fields need people and what the roles advertise per hour. Stuck? We&apos;re here to help.
         </p>
+        <HeroCta className="mt-8" />
         <nav aria-label="On this page" className="mt-10 sm:mt-12">
           <ol className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
             {sections.map((s) => (
