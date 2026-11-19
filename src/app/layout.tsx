@@ -19,6 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Links to the site in shared previews and search results use our own domain.
+  metadataBase: new URL(siteConfig.url),
   title: `${siteConfig.shortName} · ${siteConfig.name}`,
   description: siteConfig.description,
 };

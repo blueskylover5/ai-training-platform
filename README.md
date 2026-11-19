@@ -1,5 +1,7 @@
 # ATRE: AI Training Resolution Expert
 
+Live at **https://www.ai-solver.support**.
+
 A free service for people who are stuck on AI training work: rejected tasks, failed assessments, prompts that are too easy. It has two parts:
 
 - **Trends:** charts and figures showing the AI training job market (open roles, growth and advertised pay by kind of work), built from AITraining.jobs open data. They help experts see where their skills are in demand.
@@ -59,7 +61,7 @@ One-time set-up:
 The pages say "The first update has not run yet" until the schedule's first run. To collect straight away, run `collect-trends` by hand from the project's **Schedules** page, or call the address yourself:
 
 ```bash
-curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://<your-site>.vercel.app/api/trends/collect
+curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://www.ai-solver.support/api/trends/collect
 ```
 
 On Vercel:

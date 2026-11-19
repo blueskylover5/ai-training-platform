@@ -35,6 +35,7 @@ Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, f
 - 19 November 2026: by the owner's decision, the site keeps a **visitor log**: each page view with its time, page, IP address, approximate location and browser, kept without a time limit, shown only on a password-protected admin page. The footer tells visitors (`VIS-01` to `VIS-04`, §10). See [ADR 0008](adr/0008-visitor-log.md).
 - 19 November 2026: at the owner's request, the site has no footer. The data credit line now sits under the headline figures on the home page and the Platform guide, as it already did under every chart (`TRD-04`). The notice that visits are logged went with the footer (`VIS-02`).
 - 19 November 2026: the product is named **AI Training Resolution Expert (ATRE)**, and "ATRE" is its logo and favicon. The site has brand colours (indigo with amber highlights). The home page now speaks to people who are stuck on AI training work: a headline over a background slideshow of photos, then a section with who it is for and what we do, "Are you facing these challenges?", and the platforms we help with. The job market overview moved to `/market` (menu: "Job market"). The heroes of the home page, Job market and the Platform guide have a call-to-action row: "Tell us where you're stuck" to Contact us. Contact us has none, because its form is already there; at the owner's request, the Telegram and Discord buttons appear on Contact us only. The photos are CC0 or public domain, and the platform badges show each platform's own site icon; sources are in [image credits](image-credits.md).
+- 19 November 2026: the site has its own domain, **www.ai-solver.support** (on Vercel; `ai-solver.support` redirects there). The data feed requests name it so AITraining.jobs can see who is reading.
 
 ### What changed in v3.1 (12 November 2026)
 
@@ -424,7 +425,7 @@ Sizes are rough, for one or two developers.
 | Tell AITraining.jobs about the trend pages | Pending | Product owner | The licence already allows it; telling them keeps the partnership healthy |
 | Hosting | Resolved | Business owner | Vercel free plan with Neon Postgres (free plan), decided 19 Nov 2026 ([ADR 0007](adr/0007-host-on-vercel.md)). Vercel's free plan is for non-commercial use: move to Pro once the site earns money |
 | Product name | Resolved | Business owner | AI Training Resolution Expert (ATRE), decided 19 Nov 2026; "ATRE" is the logo and favicon |
-| Domain | Pending | Business owner | Needed for credit links, email from our own address and the feed `source=` tag |
+| Domain | Resolved | Business owner | www.ai-solver.support, set up on Vercel on 19 Nov 2026 (`ai-solver.support` redirects to it). Still to do: verify it with Resend so contact emails come from our own address |
 | Funding model | Pending | Business owner | See §3 |
 | Contact channels and scheduling tool | Pending | Operations | Work email, work Telegram, scheduling links; team Telegram and Discord channels for the contact section, which uses two personal accounts until then (`CON-05`) |
 | Email delivery for contact messages | Resolved for now | Operations | Resend, to the owner's Gmail address, decided 19 Nov 2026 (`CON-03`). Until the product domain is verified with Resend, emails come from onboarding@resend.dev and can only go to the address the Resend account was opened with |
