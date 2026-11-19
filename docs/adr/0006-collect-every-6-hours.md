@@ -1,6 +1,6 @@
 # ADR 0006: Collect trends every 6 hours, scheduled by the app server
 
-- **Status:** Accepted
+- **Status:** Accepted; on Vercel, a Vercel Schedule runs the collection instead of the app server ([ADR 0007](0007-host-on-vercel.md), 19 November 2026)
 - **Date:** 2026-11-18
 - **Design reference:** system design v3.2, §5 (`TRD-01`, `TRD-09`, `TRD-11`); amends ADR 0003 and ADR 0004
 

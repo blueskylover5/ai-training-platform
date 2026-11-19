@@ -29,6 +29,16 @@ export const trendSnapshots = pgTable(
   (t) => [uniqueIndex("trend_snapshots_date_kind_uq").on(t.dataDate, t.fileKind)],
 );
 
+/**
+ * Raw copies of downloaded data files (TRD-01), when they are kept in the database instead of on
+ * disk: on hosting without a lasting disk, such as Vercel (ADR 0007). `key` is the snapshot's `raw_key`.
+ */
+export const trendRawFiles = pgTable("trend_raw_files", {
+  key: text("key").primaryKey(),
+  body: text("body").notNull(),
+  storedAt: timestamp("stored_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 const snapshotRef = () =>
   integer("snapshot_id")
     .notNull()

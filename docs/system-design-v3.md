@@ -30,6 +30,7 @@ Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, f
 - The site is light only (black text on a white page) with a larger, roomier layout.
 - 18 November 2026: at the owner's request, trend figures are collected every 6 hours (00:30, 06:30, 12:30 and 18:30 UTC) by a schedule inside the app server. A later run on the same date replaces that date's figures with the newer file, the pages show the time of the figures, and the out-of-date notice appears after 8 hours (`TRD-01`, `TRD-09`, `TRD-11`, `AT-01`). See [ADR 0006](adr/0006-collect-every-6-hours.md).
 - 18 November 2026: at the owner's request, the contact section moved from the end of the Platform guide to its own **Contact us** page (`/contact`, #9). The menu and the home page link there, the guide has three parts again and ends with the same "Struggling with AI training?" box as the home page, and old `/platforms#contact` links land on `/contact` (`CON-01`).
+- 19 November 2026: the site is hosted on Vercel (free plan) with a Neon Postgres database. On Vercel, a Vercel Schedule calls a protected address every 6 hours instead of the schedule inside the app server, and raw copies of downloaded files are kept in the database (`TRD-01`). See [ADR 0007](adr/0007-host-on-vercel.md).
 
 ### What changed in v3.1 (12 November 2026)
 
@@ -122,8 +123,8 @@ flowchart LR
 | Charts | Recharts | Line, bar, range and sparkline charts; every chart has an accessible data table |
 | Share images | Server-generated Open Graph images per chart | So shared links show the chart on social media |
 | Database | PostgreSQL 16 | Point-in-time recovery |
-| Worker | Scheduled job runner: by default a schedule inside the app server, or cron (ADR 0006) | Trend collection every 6 hours; feed polling if the jobs module is on |
-| File storage | S3-compatible | Raw copies of every downloaded data file; expert photos |
+| Worker | Scheduled job runner: on Vercel, a Vercel Schedule that calls a protected address (ADR 0007); on a long-running server, a schedule inside the app server, or cron (ADR 0006) | Trend collection every 6 hours; feed polling if the jobs module is on |
+| File storage | S3-compatible; on Vercel, raw copies are kept in a database table for now (ADR 0007) | Raw copies of every downloaded data file; expert photos |
 | Email | Transactional provider with SPF, DKIM, DMARC | Contact requests, follow-ups, alerts |
 | Sign-in | Email magic link or passkey; MFA for team experts and admins | |
 | Meetings | External scheduling links set by each expert | No meeting system built in |
@@ -403,6 +404,7 @@ Sizes are rough, for one or two developers.
 | AITraining.jobs: showing roles; linking through them; polling | Resolved | Product owner | Confirmed 9 Nov 2026 |
 | AITraining.jobs: `/go/` field in feed and click credit | Pending | Product owner | Only needed for the jobs module |
 | Tell AITraining.jobs about the trend pages | Pending | Product owner | The licence already allows it; telling them keeps the partnership healthy |
+| Hosting | Resolved | Business owner | Vercel free plan with Neon Postgres (free plan), decided 19 Nov 2026 ([ADR 0007](adr/0007-host-on-vercel.md)). Vercel's free plan is for non-commercial use: move to Pro once the site earns money |
 | Product name and domain | Pending | Business owner | Needed for credit links, email and the feed `source=` tag |
 | Funding model | Pending | Business owner | See §3 |
 | Contact channels and scheduling tool | Pending | Operations | Work email, work Telegram, scheduling links; team Telegram and Discord channels for the contact section, which uses two personal accounts until then (`CON-05`) |
