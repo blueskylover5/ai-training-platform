@@ -65,3 +65,11 @@ At the owner's request, the visit list on `/admin/visits` can be cleaned up.
   - Each deletion is written to the server log with the visit ids, until the admin module's audit log exists (`SEC-07`).
 
 Consequence: the owner can now honour a deletion request from the page itself, without a database query. The list has no search yet, so finding one person's visits means paging through or downloading the CSV.
+
+## Amendment (2026-11-20): times in Japan time
+
+At the owner's request, `/admin/visits` shows visit times in Japan time (JST, `Asia/Tokyo`) instead of UTC. The time zone is set in `visitConfig.admin.timeZone`.
+
+- The database still stores each visit in UTC, so nothing already recorded changes.
+- The CSV download has two time columns: `visited_at_jst` ("2026-11-19 13:12:30") first, then `visited_at_utc` as before. Its file name uses today's date in Japan.
+- The "last 24 hours" and "last 7 days" figures count back from the current moment, so they are the same in any time zone.

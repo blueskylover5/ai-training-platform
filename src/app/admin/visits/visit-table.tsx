@@ -21,9 +21,9 @@ const visitsWord = (n: number) => `${number.format(n)} visit${n === 1 ? "" : "s"
 /**
  * The visit list with selection and deletion (VIS-03): tick visits one by one, Shift-click to tick a
  * range, tick the header box for the whole page, then "Select all" for every visit in the log.
- * Deleting asks for confirmation first.
+ * Deleting asks for confirmation first. `timeZoneLabel` names the time zone the times are in ("JST").
  */
-export function VisitTable({ rows, total }: { rows: VisitRow[]; total: number }) {
+export function VisitTable({ rows, total, timeZoneLabel }: { rows: VisitRow[]; total: number; timeZoneLabel: string }) {
   const [selected, setSelected] = useState<Set<number>>(() => new Set());
   /** Every visit in the log, not just this page. */
   const [everything, setEverything] = useState(false);
@@ -153,7 +153,7 @@ export function VisitTable({ rows, total }: { rows: VisitRow[]; total: number })
                   />
                 </label>
               </th>
-              {["Time (UTC)", "Page", "IP address", "Location", "Browser", "Came from"].map((c) => (
+              {[`Time (${timeZoneLabel})`, "Page", "IP address", "Location", "Browser", "Came from"].map((c) => (
                 <th key={c} scope="col" className="px-4 py-3 font-medium whitespace-nowrap">
                   {c}
                 </th>

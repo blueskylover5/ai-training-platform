@@ -90,12 +90,43 @@ function csvField(value: string | null): string {
   return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
-const CSV_COLUMNS = ["visited_at_utc", "path", "ip", "country", "region", "city", "user_agent", "referrer"] as const;
+/** A time zone to show visit times in: an IANA name and the short label shown with the times. */
+export interface TimeZone {
+  id: string;
+  label: string;
+}
 
-/** All visits as CSV, with a byte-order mark so spreadsheet programs read it as UTF-8. */
-export function visitsCsv(visits: SiteVisit[]): string {
-  const lines = visits.map((v) =>
-    [v.visitedAt.toISOString(), v.path, v.ip, v.country, v.region, v.city, v.userAgent, v.referrer].map(csvField).join(","),
+/** A sortable "2026-11-19 13:12:30" timestamp in the given time zone. */
+export function localTimestamp(date: Date, timeZone: string): string {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    })
+      .formatToParts(date)
+      .map((p) => [p.type, p.value]),
   );
-  return `﻿${[CSV_COLUMNS.join(","), ...lines].join("\r\n")}\r\n`;
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+}
+
+const CSV_COLUMNS = ["path", "ip", "country", "region", "city", "user_agent", "referrer"] as const;
+
+/**
+ * All visits as CSV, with a byte-order mark so spreadsheet programs read it as UTF-8. Each visit's time
+ * comes first in `timeZone` (the admin page's), then in UTC as stored.
+ */
+export function visitsCsv(visits: SiteVisit[], timeZone: TimeZone): string {
+  const header = [`visited_at_${timeZone.label.toLowerCase()}`, "visited_at_utc", ...CSV_COLUMNS];
+  const lines = visits.map((v) =>
+    [localTimestamp(v.visitedAt, timeZone.id), v.visitedAt.toISOString(), v.path, v.ip, v.country, v.region, v.city, v.userAgent, v.referrer]
+      .map(csvField)
+      .join(","),
+  );
+  return `﻿${[header.join(","), ...lines].join("\r\n")}\r\n`;
 }
