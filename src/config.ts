@@ -32,12 +32,23 @@ export const trendsConfig = {
     everyHours: 6,
     minuteUtc: 30,
     /**
-     * The app server runs the schedule itself. Set TRENDS_SCHEDULE=off when something else runs
-     * `npm run trends:collect` instead (a cron job), or on all but one server when several run.
+     * The app server runs the schedule itself, except on Vercel, where nothing runs between requests
+     * and a Vercel Schedule calls `endpoint.path` instead (ADR 0007). TRENDS_SCHEDULE=on or off
+     * overrides: off when something else runs the collection (a cron job), or on all but one server
+     * when several run.
      */
-    inApp: process.env.TRENDS_SCHEDULE !== "off",
+    inApp: process.env.TRENDS_SCHEDULE ? process.env.TRENDS_SCHEDULE !== "off" : !process.env.VERCEL,
     /** After a start that missed a run, wait this long before catching up, so the server settles first. */
     catchUpDelayMs: 30_000,
+  },
+  /**
+   * ADR 0007: the address a timer calls to run one collection (POST or GET), with the header
+   * "Authorization: Bearer <CRON_SECRET>". On Vercel, the schedule in vercel.json calls it at the
+   * times above. Without a secret of at least `secretMinChars` characters the address is switched off.
+   */
+  endpoint: {
+    path: "/api/trends/collect",
+    secretMinChars: 16,
   },
   /** TRD-09: show an out-of-date notice when the newest snapshot is older than this: one missed run plus some slack. */
   staleAfterHours: 8,
@@ -129,5 +140,16 @@ export const contactConfig = {
 export const storageConfig = {
   /** "pglite://memory", "pglite://<directory>" or a postgres:// connection string. */
   databaseUrl: process.env.DATABASE_URL ?? "pglite://.data/pglite",
+  /**
+   * For migrations: a direct connection when the host offers one beside a pooled DATABASE_URL
+   * (the Neon integration on Vercel sets DATABASE_URL_UNPOOLED).
+   */
+  migrationDatabaseUrl: process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL ?? "pglite://.data/pglite",
+  /**
+   * TRD-01: where raw copies of downloaded files go. "files" keeps them under `rawStorageDir`;
+   * "database" keeps them in the trend_raw_files table, for hosting whose disk doesn't last, such as
+   * Vercel, where it is the default (ADR 0007).
+   */
+  rawStorage: (process.env.RAW_STORAGE ?? (process.env.VERCEL ? "database" : "files")) === "database" ? "database" : "files",
   rawStorageDir: process.env.RAW_STORAGE_DIR ?? ".data/raw",
 } as const;
