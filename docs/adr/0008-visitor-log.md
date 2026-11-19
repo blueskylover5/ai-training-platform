@@ -1,0 +1,44 @@
+# ADR 0008: A visitor log with IP addresses, for the owner only
+
+- **Status:** Accepted
+- **Date:** 2026-11-19
+- **Design reference:** system design v3.2, §10 (`VIS-01` to `VIS-04`, `SEC-05`)
+
+## Context
+
+The owner asked for a way to track and record who visits the site: their IP addresses and visit times. On 19 November 2026 they chose to keep full IP addresses without a time limit, with a notice in the footer, over two alternatives: deleting records after 90 days, or Vercel's analytics, which keeps no IP addresses.
+
+IP addresses count as personal data in many places (in the EU under the GDPR, for example). Until now the site kept the contact form sender's address only as a salted hash (`CON-04`), in line with data minimization (`SEC-05`).
+
+## Decision
+
+- **What is recorded (`VIS-01`):** one row per page view in `site_visits`:
+  - the time (UTC) and the page's path (without query or `#`)
+  - the IP address as Vercel's proxy recorded it, read the same way as for the contact form
+  - the approximate location Vercel adds (country, region, city)
+  - the browser's user agent
+  - on the first page of a visit only, the other site it came from
+- **How:** a small client component in the root layout posts `{ path, referrer }` to `/api/visits` on every page view, including moves between pages without a full load. A script is needed for those moves: static pages such as `/contact` are often served from the browser's prefetch without reaching the server. So visitors without JavaScript, including most crawlers, are not recorded, and admin pages are skipped.
+- **Kept without a time limit (`VIS-02`):** the footer of every page says that visits are logged and what is recorded.
+- **Who sees it (`VIS-03`):** only the owner, on `/admin/visits`.
+  - The page shows totals, the top pages and countries of the last 7 days, every visit newest first (100 per page), and **Download all as CSV**.
+  - `src/proxy.ts` asks for a user name and password with the browser's own sign-in box (HTTP Basic: `ADMIN_USER`, default `admin`, and `ADMIN_PASSWORD`). The page and the download check again themselves.
+  - While no password of at least 12 characters is set, the admin pages answer "not found".
+- **Abuse (`VIS-04`):**
+  - Requests that a browser marks as coming from another site are refused.
+  - Paths must be this site's, and fields are cut to size.
+  - At most 30 views per IP address per minute are recorded; the count and the insert happen under a lock.
+  - In the CSV, values that a spreadsheet would run as a formula are prefixed with an apostrophe.
+
+## Consequences
+
+- **Privacy:**
+  - Before launch, the privacy policy (§13) must say what is logged, why, and for how long. The footer line is a notice, not a policy.
+  - Keeping full IP addresses without a time limit goes further than data minimization (`SEC-05`). Visitors in the EU can ask for their records or for them to be deleted. Deleting needs a database query until the admin module has a button for it.
+  - With the full IP of each visit stored, the hashed address on contact messages (`CON-04`) no longer hides who sent a message from someone who can read the database: the visit times can be matched to it. Access to the database and to the admin password should be treated accordingly.
+- **What counts:**
+  - Anyone can post fake views with a script (up to the per-minute limit), so the figures are a guide, not an audit.
+  - Visitors who block scripts are not counted.
+  - Locally, location shows as "Unknown", because only Vercel adds it.
+- **Storage:** one small row per page view, so even thousands a day stay well within Neon's free plan for a long time. The CSV download loads all visits at once, which will need paging once there are hundreds of thousands.
+- **Password:** HTTP Basic sends the password with every admin request. That is safe over HTTPS, which Vercel always uses. There is no lockout after wrong guesses, so `ADMIN_PASSWORD` should be long and random.

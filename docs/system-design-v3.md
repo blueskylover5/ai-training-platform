@@ -32,6 +32,7 @@ Everything is free. Data comes from AITraining.jobs open data (CC BY 4.0) and, f
 - 18 November 2026: at the owner's request, the contact section moved from the end of the Platform guide to its own **Contact us** page (`/contact`, #9). The menu and the home page link there, the guide has three parts again and ends with the same "Struggling with AI training?" box as the home page, and old `/platforms#contact` links land on `/contact` (`CON-01`).
 - 19 November 2026: the site is hosted on Vercel (free plan) with a Neon Postgres database. On Vercel, a Vercel Schedule calls a protected address every 6 hours instead of the schedule inside the app server, and raw copies of downloaded files are kept in the database (`TRD-01`). See [ADR 0007](adr/0007-host-on-vercel.md).
 - 19 November 2026: at the owner's request, each contact message is also emailed to the owner through Resend, with the visitor's address as Reply-To (`CON-03`). See the amendment to [ADR 0005](adr/0005-public-contact-form.md).
+- 19 November 2026: by the owner's decision, the site keeps a **visitor log**: each page view with its time, page, IP address, approximate location and browser, kept without a time limit, shown only on a password-protected admin page. The footer tells visitors (`VIS-01` to `VIS-04`, §10). See [ADR 0008](adr/0008-visitor-log.md).
 
 ### What changed in v3.1 (12 November 2026)
 
@@ -323,6 +324,8 @@ This module carries over from v2.1 unchanged in substance. It is phase 3 and can
 | `trend_platforms` | data_date, slug, name, open_count |
 | `trend_weekly` | iso_week, new_roles, as_of_date |
 | `contact_messages` | id, created_at, name, email, topic (empty since #7), message, policy_confirmed_at (empty since #7), address_hash, status (new, answered) |
+| `site_visits` | id, visited_at, path, ip, country, region, city, user_agent, referrer (`VIS-01`) |
+| `trend_raw_files` | key, body, stored_at: raw copies on hosting without a lasting disk (ADR 0007) |
 | `sources`, `source_syncs`, `jobs`, `job_versions`, `saved_jobs`, `applications`, `notifications` | Jobs module only; as in v2.1 §13 |
 | `audit_events` | actor_id, action, resource, at (append-only) |
 
@@ -360,6 +363,17 @@ All endpoints return JSON with `application/problem+json` errors and are rate-li
 | `SEC-06` | A strict Content Security Policy, CSRF protection, sanitized user and source text, and file-type and size limits on photos. |
 | `SEC-07` | An append-only audit log for admin actions and access to contact channels. |
 | `SEC-08` | Dependency and secret scanning in CI; checks against OWASP ASVS Level 2 before launch. |
+
+### Visitor log
+
+The owner decided on 19 November 2026 to log each visit with the visitor's IP address and to keep the records without a time limit. This goes further than `SEC-05` (data minimization) and needs the privacy policy (§13) to describe it. See [ADR 0008](adr/0008-visitor-log.md).
+
+| ID | Requirement |
+|---|---|
+| `VIS-01` | Each page view is recorded: the time (UTC), the page's path, the visitor's IP address as the hosting proxy recorded it, its approximate location from the host (country, region, city), the browser (user agent), and the other site the visit came from on its first page. The page reports the view with a small script, so visitors without JavaScript, including most crawlers, are not recorded. Admin pages are not recorded. |
+| `VIS-02` | The records are kept without a time limit. The footer of every page says that visits are logged and what is recorded. |
+| `VIS-03` | Only the owner sees the records, on `/admin/visits`: totals, the top pages and countries of the last 7 days, every visit newest first, and a CSV download of all visits. The admin pages ask for a user name and password (`ADMIN_USER`, `ADMIN_PASSWORD`) and answer "not found" while no password of at least 12 characters is set. |
+| `VIS-04` | Only the site's own pages can report a view (browsers that say a request comes from another site are refused), and at most 30 views per IP address per minute are recorded. |
 
 ---
 
@@ -436,6 +450,7 @@ Sizes are rough, for one or two developers.
 | AT-14 | Deleting an account removes the member's personal data from requests within 30 days. |
 | AT-15 | A contact-form message with a wrong email address or with a too-short message is refused with a clear message, and what was typed is kept. |
 | AT-16 | A fourth contact-form message from the same address within an hour is refused; a filled hidden field stores nothing. |
+| AT-17 | Opening a page records one visit with its time, page and IP address; moving to another page through the menu records another. `/admin/visits` asks for the admin password and then lists both. |
 
 ---
 

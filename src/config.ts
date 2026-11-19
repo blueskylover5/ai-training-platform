@@ -166,3 +166,35 @@ export const storageConfig = {
   rawStorage: (process.env.RAW_STORAGE ?? (process.env.VERCEL ? "database" : "files")) === "database" ? "database" : "files",
   rawStorageDir: process.env.RAW_STORAGE_DIR ?? ".data/raw",
 } as const;
+
+/**
+ * The visitor log (VIS-01 to VIS-04, ADR 0008). The owner decided on 19 November 2026 to record each
+ * page view with the visitor's IP address and keep the records without a time limit; the footer
+ * says so. The records are shown only on the admin page, behind ADMIN_PASSWORD.
+ */
+export const visitConfig = {
+  /** Where each page reports its view. */
+  endpointPath: "/api/visits",
+  pathMaxChars: 300,
+  referrerMaxChars: 500,
+  userAgentMaxChars: 400,
+  /** Longest request body accepted, in characters. */
+  bodyMaxChars: 2_000,
+  /** VIS-04: at most this many records per IP address per minute; more are dropped. */
+  maxPerAddressPerMinute: 30,
+  /** Headers Vercel adds with the approximate location of the visitor's IP address. City is URL-encoded. */
+  locationHeaders: {
+    country: "x-vercel-ip-country",
+    region: "x-vercel-ip-country-region",
+    city: "x-vercel-ip-city",
+  },
+  /** VIS-03: the admin pages. Off (not found) until ADMIN_PASSWORD has at least `passwordMinChars` characters. */
+  admin: {
+    user: process.env.ADMIN_USER?.trim() || "admin",
+    passwordMinChars: 12,
+    /** Visits per page in the list on /admin/visits. */
+    pageSize: 100,
+    /** How many pages and countries the summary lists. */
+    topCount: 10,
+  },
+} as const;
