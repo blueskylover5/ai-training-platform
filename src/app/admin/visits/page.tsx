@@ -9,6 +9,7 @@ import { getDb } from "@/db/server";
 import { adminAccess, adminSettings } from "@/visits/admin-auth";
 import { browserLabel, recentVisits, visitSummary, type SiteVisit } from "@/visits/report";
 import { pageWidth } from "../../_components/page-width";
+import { VisitTable, type VisitRow } from "./visit-table";
 
 export const metadata: Metadata = {
   title: `Visitor log · ${siteConfig.shortName}`,
@@ -101,10 +102,18 @@ async function Report({ searchParams }: { searchParams: PageProps<"/admin/visits
           </a>
         </div>
         {visits.length === 0 ? (
-          <p className="mt-6 text-ink-2">No visits recorded yet.</p>
+          <p className="mt-6 text-ink-2">
+            {page > 1 ? (
+              <>
+                No visits on this page. <Link href="/admin/visits">Go to the newest visits</Link>.
+              </>
+            ) : (
+              "No visits recorded yet."
+            )}
+          </p>
         ) : (
-          <div className="mt-6 overflow-x-auto rounded-2xl border border-line bg-surface">
-            <VisitTable visits={visits} />
+          <div className="mt-6">
+            <VisitTable rows={visits.map(toRow)} total={summary.allTime} />
           </div>
         )}
         <nav aria-label="Pages of visits" className="mt-6 flex gap-6">
@@ -140,33 +149,16 @@ function TopList({ title, rows }: { title: string; rows: Array<{ label: string; 
   );
 }
 
-function VisitTable({ visits }: { visits: SiteVisit[] }) {
-  return (
-    <table className="w-full min-w-[56rem] border-collapse text-left text-sm">
-      <caption className="sr-only">Latest visits, newest first</caption>
-      <thead>
-        <tr className="border-b border-line text-ink-2">
-          {["Time (UTC)", "Page", "IP address", "Location", "Browser", "Came from"].map((c) => (
-            <th key={c} scope="col" className="px-4 py-3 font-medium whitespace-nowrap">
-              {c}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {visits.map((v) => (
-          <tr key={v.id} className="border-b border-line align-top last:border-0">
-            <td className="px-4 py-2.5 whitespace-nowrap tabular-nums text-ink">{time.format(v.visitedAt)}</td>
-            <td className="px-4 py-2.5 break-all text-ink">{v.path}</td>
-            <td className="px-4 py-2.5 font-mono text-xs break-all text-ink">{v.ip ?? "Unknown"}</td>
-            <td className="px-4 py-2.5 text-ink">{[v.city, v.region, v.country].filter(Boolean).join(", ") || "Unknown"}</td>
-            <td className="px-4 py-2.5 text-ink" title={v.userAgent ?? undefined}>
-              {browserLabel(v.userAgent) ?? "Unknown"}
-            </td>
-            <td className="px-4 py-2.5 break-all text-ink-2">{v.referrer ?? "—"}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+/** A visit as the selectable table shows it, formatted here on the server. */
+function toRow(v: SiteVisit): VisitRow {
+  return {
+    id: v.id,
+    time: time.format(v.visitedAt),
+    path: v.path,
+    ip: v.ip ?? "Unknown",
+    location: [v.city, v.region, v.country].filter(Boolean).join(", ") || "Unknown",
+    browser: browserLabel(v.userAgent) ?? "Unknown",
+    userAgent: v.userAgent,
+    referrer: v.referrer ?? "—",
+  };
 }
