@@ -104,7 +104,7 @@ export interface PlatformMark {
  * endorse us. No links: we never link to hiring platforms directly (AITraining.jobs agreement).
  */
 export const platforms: PlatformMark[] = [
-  { name: "Afterquery", logo: "/images/platforms/afterquery.png" },
+  { name: "AfterQuery", logo: "/images/platforms/afterquery.png" },
   { name: "Handshake", logo: "/images/platforms/handshake.png" },
   { name: "Alignedhq", logo: "/images/platforms/alignedhq.png" },
   { name: "Alignerr", logo: "/images/platforms/alignerr.png" },
@@ -117,3 +117,9 @@ export const platforms: PlatformMark[] = [
   { name: "Prolific", logo: "/images/platforms/prolific.png" },
   { name: "Welo Data", logo: "/images/platforms/welo-data.png" },
 ];
+
+/**
+ * The platforms the home page hero names when it asks visitors whether they work on any of them
+ * (owner's request, 21 November 2026). Each must be in `platforms`, which supplies its logo.
+ */
+export const heroPlatformNames = ["AfterQuery", "Outlier", "Handshake", "DataAnnotation"] as const;

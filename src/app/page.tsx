@@ -1,7 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { landingConfig } from "@/config";
-import { challenges, heroBackgrounds, platforms, type Challenge, type PlatformMark } from "@/content/landing";
+import {
+  challenges,
+  heroBackgrounds,
+  heroPlatformNames,
+  platforms,
+  type Challenge,
+  type PlatformMark,
+} from "@/content/landing";
 import { updateCadence } from "@/trends/present";
 import { HeroBackdrop } from "./_components/hero-backdrop";
 import { HeroCta } from "./_components/hero-cta";
@@ -16,7 +23,7 @@ import { pageWidth } from "./_components/page-width";
 /** Real situations people bring to us, in the owner's words; the list ends with "…" on purpose. */
 const whoFor = [
   <>
-    You&apos;ve been invited to the &ldquo;Chiper&rdquo; project on Afterquery, but your &ldquo;questions&rdquo; keep
+    You&apos;ve been invited to the &ldquo;Chiper&rdquo; project on AfterQuery, but your &ldquo;questions&rdquo; keep
     getting rejected as &ldquo;too easy&rdquo;, so you can&apos;t earn anything.
   </>,
   <>
@@ -45,7 +52,16 @@ export default function Home() {
   );
 }
 
-/** The headline over a background slideshow of photos (owner's request, 19 November 2026). */
+/** The hero's platforms, with their logos from the platform list. */
+const heroPlatforms: PlatformMark[] = heroPlatformNames.map(
+  (name) => platforms.find((p) => p.name === name) ?? { name, logo: null },
+);
+
+/**
+ * The hero, over a background slideshow of photos (19 November 2026). At the owner's request
+ * (21 November 2026) it names the main platforms, asks whether the visitor works on any of them,
+ * and offers full support when something goes wrong there.
+ */
 function Hero() {
   return (
     <section
@@ -57,13 +73,41 @@ function Hero() {
         <p className="text-sm font-semibold tracking-widest text-accent uppercase">AI Training Resolution Expert</p>
         <h1
           id="hero-title"
-          className="mt-4 max-w-3xl text-4xl leading-[1.1] font-bold tracking-tight text-balance sm:text-6xl lg:text-7xl"
+          className="mt-4 max-w-4xl text-4xl leading-[1.1] font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl"
         >
-          Stuck on an AI training project? We&apos;ll get you through it.
+          Are you working on any of these AI training platforms?
         </h1>
+        <ul role="list" aria-label="AI training platforms" className="mt-8 flex flex-wrap items-center gap-3">
+          {heroPlatforms.map((platform) => (
+            <HeroPlatform key={platform.name} platform={platform} />
+          ))}
+          <li className="px-1 text-lg font-medium text-white/80">and more</li>
+        </ul>
+        <p className="mt-8 max-w-2xl text-lg leading-8 text-white/90 sm:text-2xl sm:leading-9">
+          If you run into any trouble while working on them, we&apos;ll give you{" "}
+          <strong className="font-semibold text-accent">full support</strong>, every step of the way.
+        </p>
         <HeroCta onDark className="mt-10" />
       </div>
     </section>
+  );
+}
+
+function HeroPlatform({ platform }: { platform: PlatformMark }) {
+  return (
+    <li className="flex items-center gap-2.5 rounded-full bg-white/10 py-1.5 pr-4 pl-1.5 text-base font-semibold ring-1 ring-white/25 sm:text-lg">
+      <span className="flex size-8 items-center justify-center rounded-full bg-white sm:size-9">
+        {platform.logo ? (
+          // The name sits next to it, so the icon needs no description. Top of the page: load it right away.
+          <Image src={platform.logo} alt="" width={24} height={24} loading="eager" className="size-5 object-contain sm:size-6" />
+        ) : (
+          <span aria-hidden="true" className="text-sm font-bold text-brand-deep">
+            {platform.name.charAt(0)}
+          </span>
+        )}
+      </span>
+      {platform.name}
+    </li>
   );
 }
 

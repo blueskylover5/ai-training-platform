@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { landingConfig } from "../../src/config";
-import { challenges, heroBackgrounds, platforms } from "../../src/content/landing";
+import { challenges, heroBackgrounds, heroPlatformNames, platforms } from "../../src/content/landing";
 
 /** An image path must be under /images and the file must be in /public, so a typo never ships a broken picture. */
 function expectImage(src: string | null) {
@@ -34,6 +34,15 @@ describe("home page content (19 November 2026)", () => {
   it("lists each platform once, with its logo file when there is one", () => {
     expect(new Set(platforms.map((p) => p.name.toLowerCase())).size).toBe(platforms.length);
     for (const platform of platforms) expectImage(platform.logo);
+  });
+
+  it("names hero platforms from the platform list, so each has its logo", () => {
+    expect(heroPlatformNames).toEqual(["AfterQuery", "Outlier", "Handshake", "DataAnnotation"]);
+    for (const name of heroPlatformNames) {
+      const platform = platforms.find((p) => p.name === name);
+      expect(platform, `${name} is not in the platform list`).toBeDefined();
+      expect(platform?.logo).not.toBeNull();
+    }
   });
 
   it("changes the hero background slowly", () => {
