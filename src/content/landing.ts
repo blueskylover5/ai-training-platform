@@ -123,3 +123,17 @@ export const platforms: PlatformMark[] = [
  * (owner's request, 21 November 2026). Each must be in `platforms`, which supplies its logo.
  */
 export const heroPlatformNames = ["AfterQuery", "Outlier", "Handshake", "DataAnnotation"] as const;
+
+/**
+ * The icon we have for a platform as AITraining.jobs names it, or null. The data may add words after
+ * our name ("Handshake AI", "Outlier (Scale AI)"), so a name that starts with ours, followed by a
+ * space or "(", also counts. Used by the Best platforms page's top picks.
+ */
+export function platformLogo(name: string): string | null {
+  const theirs = name.trim().toLowerCase();
+  const match = platforms.find((p) => {
+    const ours = p.name.toLowerCase();
+    return theirs === ours || (theirs.startsWith(ours) && /^[\s(]/.test(theirs.slice(ours.length)));
+  });
+  return match?.logo ?? null;
+}

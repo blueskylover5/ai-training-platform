@@ -11,6 +11,7 @@ export function ChartCard({
   description,
   dataDate,
   table,
+  moreLabel,
   children,
   headingLevel = "h2",
 }: {
@@ -19,6 +20,8 @@ export function ChartCard({
   description: ReactNode;
   dataDate: string;
   table: ReactNode;
+  /** The words on the button that opens the table, for example "View all 62 platforms". */
+  moreLabel?: string;
   children: ReactNode;
   /** h3 when the card sits inside a page section that has its own h2. */
   headingLevel?: "h2" | "h3";
@@ -37,18 +40,38 @@ export function ChartCard({
       </Heading>
       <p className="mt-3 max-w-3xl text-base leading-7 text-ink-2 sm:text-lg sm:leading-8">{description}</p>
       <div className="mt-8 sm:mt-10">{children}</div>
-      <DataExtras dataDate={dataDate} table={table} />
+      <DataExtras dataDate={dataDate} table={table} moreLabel={moreLabel} />
     </section>
   );
 }
 
-/** The data table behind a chart (TRD-10) and the credit line (TRD-04); also for charts outside a ChartCard. */
-export function DataExtras({ dataDate, table, className = "" }: { dataDate: string; table: ReactNode; className?: string }) {
+/**
+ * The data table behind a chart (TRD-10) and the credit line (TRD-04); also for charts outside a
+ * ChartCard. The table stays closed behind a "View more" button (owner's request, 23 November 2026),
+ * so each section shows its summary first.
+ */
+export function DataExtras({
+  dataDate,
+  table,
+  moreLabel = "View the full table",
+  className = "",
+}: {
+  dataDate: string;
+  table: ReactNode;
+  moreLabel?: string;
+  className?: string;
+}) {
   return (
     <div className={className}>
-      <details className="mt-8 text-base">
-        <summary className="cursor-pointer font-medium text-ink-2 select-none hover:text-ink">Show the data table</summary>
-        <div className="mt-4 overflow-x-auto">{table}</div>
+      <details className="group mt-8 text-base">
+        <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-full border border-brand-soft bg-brand-wash px-5 py-2.5 font-semibold text-brand-ink select-none hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
+          <span className="group-open:hidden">{moreLabel}</span>
+          <span className="hidden group-open:inline">Show less</span>
+          <span aria-hidden="true" className="text-sm transition-transform group-open:rotate-180">
+            ▼
+          </span>
+        </summary>
+        <div className="mt-5 overflow-x-auto">{table}</div>
       </details>
       <Credit dataDate={dataDate} className="mt-6 border-t border-line pt-4" />
     </div>

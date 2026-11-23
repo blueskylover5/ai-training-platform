@@ -3,10 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const links = [
-  { href: "/market", label: "Job market" },
-  { href: "/platforms", label: "Platform guide" },
-] as const;
+/** The Best platforms page replaced "Job market" and "Platform guide" on 23 November 2026 (/market redirects there). */
+const links = [{ href: "/platforms", label: "Best platforms" }] as const;
 
 /** Site navigation; marks the page you are on. */
 export function MainNav() {

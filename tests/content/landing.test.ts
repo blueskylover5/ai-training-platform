@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { landingConfig } from "../../src/config";
-import { challenges, heroBackgrounds, heroPlatformNames, platforms } from "../../src/content/landing";
+import { challenges, heroBackgrounds, heroPlatformNames, platformLogo, platforms } from "../../src/content/landing";
 
 /** An image path must be under /images and the file must be in /public, so a typo never ships a broken picture. */
 function expectImage(src: string | null) {
@@ -47,5 +47,18 @@ describe("home page content (19 November 2026)", () => {
 
   it("changes the hero background slowly", () => {
     expect(landingConfig.heroBackgroundIntervalMs).toBeGreaterThanOrEqual(5_000);
+  });
+});
+
+describe("platform icons for the Best platforms page", () => {
+  it("finds our icon for the names AITraining.jobs uses, and nothing for platforms we have no icon for", () => {
+    expect(platformLogo("Invisible")).toBe("/images/platforms/invisible.png");
+    expect(platformLogo("Handshake AI")).toBe("/images/platforms/handshake.png");
+    expect(platformLogo("Outlier (Scale AI)")).toBe("/images/platforms/outlier.png");
+    expect(platformLogo("afterquery")).toBe("/images/platforms/afterquery.png");
+    expect(platformLogo("RemoExperts")).toBeNull();
+    // A longer word that merely starts with a name we know is a different platform.
+    expect(platformLogo("Invisibleco")).toBeNull();
+    expect(platformLogo("Aligned Labs")).toBeNull();
   });
 });

@@ -6,8 +6,8 @@ import { ChartCard, DataTable } from "./chart-card";
 import { PayRanges } from "./charts";
 
 /**
- * Advertised hourly pay for each kind of work, shared by the Job market and Platform guide pages,
- * so the "advertised" wording (TRD-07) and hidden thin figures (TRD-08) live in one place.
+ * Advertised hourly pay for each kind of work, on the Best platforms page, with the "advertised"
+ * wording (TRD-07) and hidden thin figures (TRD-08) kept in one place.
  */
 export function PayBySectorCard({
   id,
@@ -15,6 +15,7 @@ export function PayBySectorCard({
   rowLabel,
   lead = null,
   headingLevel = "h2",
+  moreLabel,
   pay,
 }: {
   id: string;
@@ -24,6 +25,8 @@ export function PayBySectorCard({
   /** Text before the standard description. */
   lead?: ReactNode;
   headingLevel?: "h2" | "h3";
+  /** The words on the button that opens the table. */
+  moreLabel?: string;
   pay: { dataDate: string; rows: PayRow[] } | null;
 }) {
   if (!pay || pay.rows.length === 0) return null;
@@ -38,6 +41,7 @@ export function PayBySectorCard({
       headingLevel={headingLevel}
       title={title}
       dataDate={dataDate}
+      moreLabel={moreLabel}
       description={
         <>
           {lead}The dot is the median; the bar is the typical range. Based on {formatCount(totalSamples)} advertised

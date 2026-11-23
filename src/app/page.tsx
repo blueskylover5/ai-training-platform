@@ -259,17 +259,12 @@ function MarketPointer() {
             Where is the work right now?
           </h2>
           <p className="mt-3 max-w-2xl text-lg leading-8 text-brand-soft">
-            Open roles, what they pay and which platforms are hiring, updated {updateCadence()}.
+            The best AI training platforms today: who has the most work, who is hiring fastest and what the roles pay,
+            updated {updateCadence()}.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
-            <Link href="/market" className={`${primaryButton} bg-white text-brand-deep hover:bg-brand-wash focus-visible:outline-white`}>
-              See the job market →
-            </Link>
-            <Link
-              href="/platforms"
-              className={`${primaryButton} border border-white/30 text-white hover:bg-white/10 focus-visible:outline-white`}
-            >
-              Compare platforms →
+            <Link href="/platforms" className={`${primaryButton} bg-white text-brand-deep hover:bg-brand-wash focus-visible:outline-white`}>
+              See the best platforms →
             </Link>
           </div>
         </div>

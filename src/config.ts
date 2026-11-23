@@ -53,10 +53,16 @@ export const trendsConfig = {
   },
   /** TRD-09: show an out-of-date notice when the newest snapshot is older than this: one missed run plus some slack. */
   staleAfterHours: 8,
-  /** Overview page: how many recent weeks the new-roles chart shows. */
-  overviewWeeks: 12,
-  /** Overview page: how many platforms the chart shows; the data table lists them all. */
-  overviewTopPlatforms: 15,
+  /**
+   * The Best platforms page (/platforms), which replaced the Job market and Platform guide pages on
+   * 23 November 2026. Each section shows a short summary; "View more" opens the full table.
+   */
+  bestPlatforms: {
+    /** How many recent weeks the hiring trend chart shows. */
+    weeks: 12,
+    /** How many sector cards show before "View all"; the table lists every sector. */
+    sectorsShown: 6,
+  },
   /**
    * TRD-11: per-platform counts read from the AITraining.jobs job search on every collection run,
    * right after roles.json. Only the `total` of each search is kept; individual roles are never stored.
@@ -77,14 +83,14 @@ export const trendsConfig = {
      */
     minHoursBetweenCounts: 5,
   },
-  /** Platform race page. */
+  /** The platform race, in the ranking section of the Best platforms page. */
   race: {
     /** How many platforms run in each race; the data table lists them all. */
     size: 10,
     /** A platform needs this many open roles before its big-pay share is quoted. */
     minOpenRolesForShare: 20,
   },
-  /** Platforms page, pay section: how many platforms the "best odds of $100+" chart shows. */
+  /** Best platforms page, pay section: how many platforms the "best odds of $100+" chart shows. */
   bigPayOddsTop: 10,
   /** TRD-04: credit shown with every chart, page, share image and export. */
   credit: {
