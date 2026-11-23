@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { DbHandle } from "../../src/db/client";
 import { collectTrends, type CollectDeps } from "../../src/trends/collect";
 import { collectPlatformStats } from "../../src/trends/platform-stats";
-import { getPlatformGuide, getPlatformRace, getTrendsOverview } from "../../src/trends/queries";
+import { getPlatformGuide, getPlatformRace } from "../../src/trends/queries";
 import { MemoryRawStore } from "../../src/trends/raw-store";
 import { createTestDb, PAY_FIXTURE, readFixture, resetTrendTables, ROLES_FIXTURE } from "../helpers";
 
@@ -42,25 +42,27 @@ beforeEach(async () => {
   await resetTrendTables(handle);
 });
 
-describe("getTrendsOverview", () => {
+describe("getPlatformGuide: the Best platforms page (TRD-09)", () => {
   it("returns null before anything is published", async () => {
-    expect(await getTrendsOverview(handle.db, { weeks: 12 })).toBeNull();
+    expect(await getPlatformGuide(handle.db, { weeks: 12 })).toBeNull();
   });
 
   it("reads the newest published files, sorted for the charts", async () => {
     await collect(readFixture(ROLES_FIXTURE), readFixture(PAY_FIXTURE));
 
-    const overview = await getTrendsOverview(handle.db, { weeks: 12 });
+    const guide = await getPlatformGuide(handle.db, { weeks: 12 });
 
-    expect(overview).not.toBeNull();
-    const { roles, pay, weekly } = overview!;
+    expect(guide).not.toBeNull();
+    const { roles, pay, weekly, race } = guide!;
     expect(roles.dataDate).toBe("2026-11-09");
+    // Shown as "as of …": when AITraining.jobs built the file, not when we fetched it.
+    expect(roles.updatedAt).toEqual(new Date("2026-11-09T08:07:11.359Z"));
     expect(roles.totals).toEqual({ dataDate: "2026-11-09", openRoles: 4376, platformsLive: 62, newLast7d: 388 });
     expect(roles.previous).toBeNull();
     expect(roles.workTypes).toHaveLength(12);
     expect(roles.workTypes[0]).toEqual({ slug: "domain-expert", label: "Law, Medicine & Finance", openCount: 1611 });
-    expect(roles.platforms).toHaveLength(62);
-    const counts = roles.platforms.map((p) => p.openCount);
+    expect(race.platforms).toHaveLength(62);
+    const counts = race.platforms.map((p) => p.openRoles);
     expect(counts).toEqual([...counts].sort((a, b) => b - a));
     expect(pay?.dataDate).toBe("2026-11-09");
     expect(pay?.rows).toHaveLength(12);
@@ -87,19 +89,19 @@ describe("getTrendsOverview", () => {
     );
     expect(held[0].status).toBe("held");
 
-    const overview = await getTrendsOverview(handle.db, { weeks: 12 });
+    const guide = await getPlatformGuide(handle.db, { weeks: 12 });
 
-    expect(overview?.roles.dataDate).toBe("2026-11-10");
-    expect(overview?.roles.totals.openRoles).toBe(4393);
-    expect(overview?.roles.previous?.dataDate).toBe("2026-11-09");
-    expect(overview?.roles.previous?.openRoles).toBe(4376);
-    expect(overview?.pay?.dataDate).toBe("2026-11-11");
+    expect(guide?.roles.dataDate).toBe("2026-11-10");
+    expect(guide?.roles.totals.openRoles).toBe(4393);
+    expect(guide?.roles.previous?.dataDate).toBe("2026-11-09");
+    expect(guide?.roles.previous?.openRoles).toBe(4376);
+    expect(guide?.pay?.dataDate).toBe("2026-11-11");
   });
 
   it("limits the weekly chart to the most recent weeks", async () => {
     await collect(readFixture(ROLES_FIXTURE), readFixture(PAY_FIXTURE));
-    const overview = await getTrendsOverview(handle.db, { weeks: 4 });
-    expect(overview?.weekly.map((w) => w.weekStart)).toEqual(["2026-10-12", "2026-10-19", "2026-10-26", "2026-11-02"]);
+    const guide = await getPlatformGuide(handle.db, { weeks: 4 });
+    expect(guide?.weekly.map((w) => w.weekStart)).toEqual(["2026-10-12", "2026-10-19", "2026-10-26", "2026-11-02"]);
   });
 });
 
@@ -164,30 +166,15 @@ describe("getPlatformRace (TRD-11)", () => {
     expect(race?.stats).toBeNull();
   });
 
-  describe("getPlatformGuide", () => {
-    it("returns null before anything is published", async () => {
-      expect(await getPlatformGuide(handle.db)).toBeNull();
-    });
+  it("is the same race the Best platforms page reads with its other figures, in one go", async () => {
+    await collect(readFixture(ROLES_FIXTURE), readFixture(PAY_FIXTURE));
+    await collectStats();
 
-    it("reads the same figures as the overview and the race, in one go", async () => {
-      await collect(readFixture(ROLES_FIXTURE), readFixture(PAY_FIXTURE));
-      await collectStats();
+    const guide = await getPlatformGuide(handle.db, { weeks: 4 });
+    const race = await getPlatformRace(handle.db);
 
-      const guide = await getPlatformGuide(handle.db);
-      const overview = await getTrendsOverview(handle.db, { weeks: 4 });
-      const race = await getPlatformRace(handle.db);
-
-      expect(guide?.roles).toEqual({
-        dataDate: overview?.roles.dataDate,
-        fetchedAt: overview?.roles.fetchedAt,
-        updatedAt: overview?.roles.updatedAt,
-        totals: overview?.roles.totals,
-        workTypes: overview?.roles.workTypes,
-      });
-      // Shown as "as of …": when AITraining.jobs built the file, not when we fetched it.
-      expect(guide?.roles.updatedAt).toEqual(new Date("2026-11-09T08:07:11.359Z"));
-      expect(guide?.pay).toEqual(overview?.pay);
-      expect(guide?.race).toEqual(race);
-    });
+    expect(race?.stats).not.toBeNull();
+    expect(guide?.race).toEqual(race);
+    expect(guide?.race.roles.dataDate).toBe(guide?.roles.dataDate);
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bigPayOdds, payHighlights, sectorShares } from "../../src/trends/insights";
+import { bigPayOdds, payHighlights, sectorShares, topPicks } from "../../src/trends/insights";
 import type { PayRow, RacePlatform } from "../../src/trends/queries";
 
 function platform(slug: string, name: string, openRoles: number, bigPayRoles: number | null): RacePlatform {
@@ -81,5 +81,49 @@ describe("payHighlights", () => {
       topSector: null,
       bestOdds: null,
     });
+  });
+});
+
+describe("topPicks: the Best platforms hero", () => {
+  const counted = (slug: string, name: string, openRoles: number, newRoles: number, bigPayRoles: number): RacePlatform => ({
+    slug,
+    name,
+    openRoles,
+    stats: { openRoles, newRoles, bigPayRoles },
+  });
+
+  it("names the leader on open roles, new roles, big-pay roles and big-pay odds", () => {
+    const platforms = [
+      counted("inv", "Invisible", 533, 0, 5),
+      counted("micro1", "micro1", 331, 46, 136),
+      counted("prolific", "Prolific", 206, 82, 22),
+      counted("remo", "RemoExperts", 32, 0, 22),
+      counted("tiny", "Tiny", 3, 0, 3),
+    ];
+    const odds = bigPayOdds(platforms, 20);
+
+    expect(topPicks(platforms, odds)).toEqual([
+      { kind: "mostOpen", slug: "inv", name: "Invisible", value: 533 },
+      { kind: "mostNew", slug: "prolific", name: "Prolific", value: 82 },
+      { kind: "mostBigPay", slug: "micro1", name: "micro1", value: 136 },
+      // Tiny's 100% rests on 3 roles, below the minimum, so it can't be picked.
+      { kind: "bestOdds", slug: "remo", name: "RemoExperts", value: 69, odds: { bigPayRoles: 22, openRoles: 32 } },
+    ]);
+  });
+
+  it("breaks ties by open roles, then by name", () => {
+    const platforms = [counted("b", "Beta", 100, 10, 0), counted("a", "Alpha", 100, 10, 0), counted("c", "Gamma", 200, 10, 0)];
+    expect(topPicks(platforms, []).map((p) => [p.kind, p.name])).toEqual([
+      ["mostOpen", "Gamma"],
+      ["mostNew", "Gamma"],
+    ]);
+    expect(topPicks(platforms.slice(0, 2), [])[0].name).toBe("Alpha");
+  });
+
+  it("picks only the most open roles before the first job-search counts, and nothing without data", () => {
+    expect(topPicks([platform("inv", "Invisible", 533, null), platform("m", "Mercor", 230, null)], [])).toEqual([
+      { kind: "mostOpen", slug: "inv", name: "Invisible", value: 533 },
+    ]);
+    expect(topPicks([], [])).toEqual([]);
   });
 });

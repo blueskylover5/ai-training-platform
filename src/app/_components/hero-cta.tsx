@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 /**
- * The call to action in the heroes of the home page, Job market and the Platform guide (owner's
- * request, 19 November 2026): one button to Contact us. The Telegram and Discord buttons are on
+ * The call to action in the heroes of the home page and the Best platforms page (owner's request,
+ * 19 November 2026): one button to Contact us. The Telegram and Discord buttons are on
  * Contact us only (owner's request), and Contact us itself has no hero button: its form and chat
  * buttons are right there. `onDark` for heroes on the dark brand background.
  */

@@ -46,24 +46,8 @@ export interface WeekPoint {
   newRoles: number;
 }
 
-export interface TrendsOverview {
-  /** Newest published roles file. */
-  roles: {
-    dataDate: string;
-    fetchedAt: Date;
-    /** When AITraining.jobs built that file (its `updated` time), or when we fetched it if that is unknown. */
-    updatedAt: Date;
-    totals: TotalsFigures;
-    /** The published roles file before it, for day-on-day changes. */
-    previous: TotalsFigures | null;
-    workTypes: WorkTypeCount[];
-    platforms: PlatformCount[];
-  };
-  /** Newest published pay file, if any. */
-  pay: { dataDate: string; rows: PayRow[] } | null;
-  /** The most recent weeks of new roles, oldest first. */
-  weekly: WeekPoint[];
-}
+/** Newest published pay file, or null before the first one. */
+export type PayFigures = { dataDate: string; rows: PayRow[] } | null;
 
 async function latestPublished(db: Db, kind: "roles" | "pay" | "platform_stats", limit: number) {
   return db
@@ -113,7 +97,7 @@ async function platformsFor(db: Db, snapshotId: number): Promise<PlatformCount[]
     .orderBy(desc(trendPlatforms.openCount), asc(trendPlatforms.name));
 }
 
-async function latestPay(db: Db): Promise<TrendsOverview["pay"]> {
+async function latestPay(db: Db): Promise<PayFigures> {
   const [latest] = await latestPublished(db, "pay", 1);
   if (!latest) return null;
   const rows = await db
@@ -134,37 +118,14 @@ async function latestPay(db: Db): Promise<TrendsOverview["pay"]> {
   return { dataDate: latest.dataDate, rows };
 }
 
-/**
- * Everything the trends overview shows, read from published snapshots only (TRD-02).
- * Returns null until the first roles file has been published.
- */
-export async function getTrendsOverview(db: Db, options: { weeks: number }): Promise<TrendsOverview | null> {
-  const [latestRoles, previousRoles] = await latestPublished(db, "roles", 2);
-  if (!latestRoles) return null;
-
-  const totals = await totalsFor(db, latestRoles.id);
-  if (!totals) return null;
-  const previous = previousRoles ? await totalsFor(db, previousRoles.id) : null;
-
-  const recentWeeks = await db
+/** The most recent `weeks` weeks of new roles, oldest first. */
+async function recentWeeks(db: Db, weeks: number): Promise<WeekPoint[]> {
+  const rows = await db
     .select({ weekStart: trendWeekly.weekStart, newRoles: trendWeekly.newRoles })
     .from(trendWeekly)
     .orderBy(desc(trendWeekly.weekStart))
-    .limit(options.weeks);
-
-  return {
-    roles: {
-      dataDate: latestRoles.dataDate,
-      fetchedAt: latestRoles.fetchedAt,
-      updatedAt: updatedAtOf(latestRoles),
-      totals,
-      previous,
-      workTypes: await workTypesFor(db, latestRoles.id),
-      platforms: await platformsFor(db, latestRoles.id),
-    },
-    pay: await latestPay(db),
-    weekly: recentWeeks.reverse(),
-  };
+    .limit(weeks);
+  return rows.reverse();
 }
 
 export interface RacePlatform {
@@ -242,25 +203,37 @@ export async function getPlatformRace(db: Db): Promise<PlatformRaceData | null> 
 
 export interface PlatformGuideData {
   /** Newest published roles file: headline figures and open roles by sector. */
-  roles: { dataDate: string; fetchedAt: Date; updatedAt: Date; totals: TotalsFigures; workTypes: WorkTypeCount[] };
+  roles: {
+    dataDate: string;
+    fetchedAt: Date;
+    /** When AITraining.jobs built that file (its `updated` time), or when we fetched it if that is unknown. */
+    updatedAt: Date;
+    totals: TotalsFigures;
+    /** The published roles file before it, for the change since then. */
+    previous: TotalsFigures | null;
+    workTypes: WorkTypeCount[];
+  };
   /** Newest published pay file, if any. */
-  pay: TrendsOverview["pay"];
+  pay: PayFigures;
   /** The platform race, built on the same roles file. */
   race: PlatformRaceData;
+  /** The most recent weeks of new roles, oldest first. */
+  weekly: WeekPoint[];
 }
 
 /**
- * Everything the Platform guide page shows, read once inside one read-only transaction, so every
- * section describes the same published files even while an update is being stored.
- * Returns null until the first roles file has been published.
+ * Everything the Best platforms page (/platforms) shows, read from published snapshots only
+ * (TRD-02) inside one read-only transaction, so every section describes the same published files
+ * even while an update is being stored. Returns null until the first roles file has been published.
  */
-export async function getPlatformGuide(db: Db): Promise<PlatformGuideData | null> {
+export async function getPlatformGuide(db: Db, options: { weeks: number }): Promise<PlatformGuideData | null> {
   return db.transaction(
     async (tx) => {
-      const [latestRoles] = await latestPublished(tx, "roles", 1);
+      const [latestRoles, previousRoles] = await latestPublished(tx, "roles", 2);
       if (!latestRoles) return null;
       const totals = await totalsFor(tx, latestRoles.id);
       if (!totals) return null;
+      const previous = previousRoles ? await totalsFor(tx, previousRoles.id) : null;
       const workTypes = await workTypesFor(tx, latestRoles.id);
       const platforms = await platformsFor(tx, latestRoles.id);
       return {
@@ -269,10 +242,12 @@ export async function getPlatformGuide(db: Db): Promise<PlatformGuideData | null
           fetchedAt: latestRoles.fetchedAt,
           updatedAt: updatedAtOf(latestRoles),
           totals,
+          previous,
           workTypes,
         },
         pay: await latestPay(tx),
         race: await raceFor(tx, latestRoles, platforms),
+        weekly: await recentWeeks(tx, options.weeks),
       };
     },
     { isolationLevel: "repeatable read", accessMode: "read only" },
